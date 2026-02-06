@@ -22,7 +22,7 @@ await sub.subscribe(ALERTS_CHANNEL, async (message) => {
 	}
 
 	for (const client of wsClients) {
-		if (client.readyState !== 1) {
+		if (client.readyState !== WebSocket.OPEN) {
 			wsClients.delete(client);
 			continue;
 		}

@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { upgradeWebSocket } from "hono/bun";
-import type { WSContext } from "hono/ws";
 
-export const wsClients = new Set<WSContext>();
+export const wsClients = new Set<WebSocket>();
 
 const route = new Hono();
 
@@ -10,14 +9,17 @@ route.get(
 	"/ws",
 	upgradeWebSocket(() => ({
 		onOpen(_event, ws) {
-			wsClients.add(ws);
-			ws.send(JSON.stringify({ event: "hello", connectedAt: Date.now() }));
+			if (!ws.raw) return;
+			wsClients.add(ws.raw);
+			ws.raw.send(JSON.stringify({ event: "hello", connectedAt: Date.now() }));
 		},
 		onClose(_event, ws) {
-			wsClients.delete(ws);
+			if (!ws.raw) return;
+			wsClients.delete(ws.raw);
 		},
 		onError(_event, ws) {
-			wsClients.delete(ws);
+			if (!ws.raw) return;
+			wsClients.delete(ws.raw);
 		},
 	})),
 );
