@@ -13,11 +13,11 @@ Definition of done:
 - ACK received and logged for that alert.
 
 ## Stage 3 - WebSocket Delivery
-- [ ] Add GET /api/ws.
-- [ ] Broadcast the same alertEvent to WS clients.
-- [ ] Log WS receipt ACKs with timestamps.
-- [ ] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
-- [ ] Compare WS vs SSE latency metrics.
+- [x] Add GET /api/ws.
+- [x] Broadcast the same alertEvent to WS clients.
+- [x] Log WS receipt ACKs with timestamps.
+- [x] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
+- [x] Compare WS vs SSE latency metrics.
 
 Definition of done:
 - Same alertEvent reaches WS clients with ACK logging.
