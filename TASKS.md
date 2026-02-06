@@ -1,11 +1,12 @@
 # Task List
 
 ## Stage 2 - Live Delivery (SSE + ACK logging)
-- [ ] Add GET /api/sse streaming alerts to connected clients.
-- [ ] Stream only canonical alertEvent from Redis Pub/Sub or Stream.
-- [ ] Add receipt ACK endpoint/schema (client -> server) with timestamps.
-- [ ] Log receipt ACKs for latency and delivery-rate metrics.
-- [ ] Verify reconnect behavior (client can reconnect and receive new alerts).
+- [x] Add GET /api/sse streaming alerts to connected clients.
+- [x] Stream only canonical alertEvent from Redis Pub/Sub or Stream.
+- [x] Add receipt ACK endpoint/schema (client -> server) with timestamps.
+- [x] Log receipt ACKs for latency and delivery-rate metrics.
+- [x] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
+- [x] Verify reconnect behavior (client can reconnect and receive new alerts).
 
 Definition of done:
 - 1 report -> 1 alert -> SSE client receives in real time.
@@ -15,6 +16,7 @@ Definition of done:
 - [ ] Add GET /api/ws.
 - [ ] Broadcast the same alertEvent to WS clients.
 - [ ] Log WS receipt ACKs with timestamps.
+- [ ] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
 - [ ] Compare WS vs SSE latency metrics.
 
 Definition of done:
@@ -25,6 +27,7 @@ Definition of done:
 - [ ] Store push subscriptions (Redis or DB).
 - [ ] Send push notifications for alertEvent.
 - [ ] Capture ACK/open/click metrics.
+- [ ] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
 
 Definition of done:
 - Alert arrives as background notification; ACKs logged.
@@ -39,7 +42,7 @@ Definition of done:
 - Offline report queues; reconnect auto-syncs; server logs and distributes.
 
 ## Stage 6 - Experimentation
-- [ ] Run controlled trials per protocol (2G/3G/high latency).
+- [ ] Run controlled trials per protocol (SSE-only, WS-only, Push-only) under 2G/3G/high latency.
 - [ ] Collect: end-to-end latency, delivery rate, sync success rate, CPU/RAM.
 - [ ] Generate dataset + plots + interpretation.
 

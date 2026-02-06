@@ -1,10 +1,10 @@
 {
   "name": "disaster-backend",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --hot index.ts"
+    "dev": "bun run --hot src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
