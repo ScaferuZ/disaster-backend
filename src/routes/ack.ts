@@ -21,12 +21,21 @@ route.post("/ack", async (c) => {
 			error: "receivedAtClient and serverTimestamp must be numbers",
 		}, 400);
 	}
+	if (
+		input.ackStage !== undefined &&
+		input.ackStage !== "DELIVERED" &&
+		input.ackStage !== "OPENED"
+	) {
+		return c.json({ ok: false, error: "ackStage must be DELIVERED or OPENED" }, 400);
+	}
 
 	const receivedAtServer = Date.now();
-	const ackKey = `${input.alertId}:${input.transport}:${input.clientId ?? "anon"}`;
+	const ackStage = input.ackStage ?? "UNSPECIFIED";
+	const ackKey = `${input.alertId}:${input.transport}:${ackStage}:${input.clientId ?? "anon"}`;
 
 	const ackEvent = {
 		...input,
+		ackStage,
 		receivedAtServer,
 		ackKey,
 		endToEndLatencyMs: input.receivedAtClient - input.serverTimestamp,

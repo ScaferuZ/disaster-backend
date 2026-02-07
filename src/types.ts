@@ -18,6 +18,7 @@ export type AckInput = {
 	transport: "SSE" | "WS" | "PUSH";
 	receivedAtClient: number;
 	serverTimestamp: number;
+	ackStage?: "DELIVERED" | "OPENED";
 	// Optional fields you can add later:
 	clientId?: string;
 	// userId?: string;

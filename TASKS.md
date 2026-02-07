@@ -23,11 +23,11 @@ Definition of done:
 - Same alertEvent reaches WS clients with ACK logging.
 
 ## Stage 4 - Web Push Delivery
-- [ ] Generate VAPID keys.
-- [ ] Store push subscriptions (Redis or DB).
-- [ ] Send push notifications for alertEvent.
-- [ ] Capture ACK/open/click metrics.
-- [ ] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
+- [x] Generate VAPID keys.
+- [x] Store push subscriptions (Redis or DB).
+- [x] Send push notifications for alertEvent.
+- [x] Capture ACK/open/click metrics.
+- [x] Include protocol tag (SSE/WS/PUSH) in ACK logs for clean slicing.
 
 Definition of done:
 - Alert arrives as background notification; ACKs logged.
