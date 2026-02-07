@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stage 6 Receiver Harness</title>
+  <style>
+    :root {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      color: #111;
+      background: #f8f8f8;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 10px;
+      border: 1px solid #222;
+      background: #111;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: #111;
+    }
+
+    #log {
+      white-space: pre-wrap;
+      margin: 0;
+      background: #0d1117;
+      color: #d7e3f4;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 240px;
+      max-width: 900px;
+      overflow: auto;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stage 6 Receiver Harness</h1>
+  <div class="actions">
+    <button id="connect-sse">Connect SSE + ACK</button>
+    <button id="disconnect-sse" class="secondary">Disconnect SSE</button>
+    <button id="connect-ws">Connect WS + ACK</button>
+    <button id="disconnect-ws" class="secondary">Disconnect WS</button>
+    <button id="clear-log" class="secondary">Clear Log</button>
+  </div>
+  <pre id="log"></pre>
+  <script type="module" src="/receiver.js"></script>
+</body>
+</html>

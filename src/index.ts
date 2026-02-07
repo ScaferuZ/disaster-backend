@@ -2,7 +2,13 @@ import { Hono } from "hono";
 import { websocket } from "hono/bun";
 import { initRedis, sub } from "./lib/redis";
 import { initWebPush, sendPushAlertToAll } from "./lib/push";
-import { ALERTS_CHANNEL, PORT } from "./config";
+import {
+	ALERTS_CHANNEL,
+	ENABLE_PUSH_DELIVERY,
+	ENABLE_SSE_DELIVERY,
+	ENABLE_WS_DELIVERY,
+	PORT,
+} from "./config";
 import healthRoute from "./routes/health";
 import sseRoute, { sseClients } from "./routes/sse";
 import wsRoute, { wsClients } from "./routes/ws";
@@ -17,29 +23,35 @@ await initRedis();
 initWebPush();
 
 await sub.subscribe(ALERTS_CHANNEL, async (message) => {
-	for (const client of sseClients) {
-		try {
-			await client.writeSSE({ event: "alert", data: message });
-		} catch {
-			sseClients.delete(client);
+	if (ENABLE_SSE_DELIVERY) {
+		for (const client of sseClients) {
+			try {
+				await client.writeSSE({ event: "alert", data: message });
+			} catch {
+				sseClients.delete(client);
+			}
 		}
 	}
 
-	for (const client of wsClients) {
-		if (client.readyState !== WebSocket.OPEN) {
-			wsClients.delete(client);
-			continue;
-		}
-		try {
-			client.send(message);
-		} catch {
-			wsClients.delete(client);
+	if (ENABLE_WS_DELIVERY) {
+		for (const client of wsClients) {
+			if (client.readyState !== WebSocket.OPEN) {
+				wsClients.delete(client);
+				continue;
+			}
+			try {
+				client.send(message);
+			} catch {
+				wsClients.delete(client);
+			}
 		}
 	}
 
-	const pushResult = await sendPushAlertToAll(message);
-	if (pushResult.failed > 0 || pushResult.removed > 0) {
-		console.info("[push]", pushResult);
+	if (ENABLE_PUSH_DELIVERY) {
+		const pushResult = await sendPushAlertToAll(message);
+		if (pushResult.failed > 0 || pushResult.removed > 0) {
+			console.info("[push]", pushResult);
+		}
 	}
 });
 

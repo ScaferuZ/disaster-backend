@@ -5,7 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "push:vapid:generate": "bunx web-push generate-vapid-keys"
+    "push:vapid:generate": "bunx web-push generate-vapid-keys",
+    "stage6:load": "bun run scripts/stage6/run-report-load.ts",
+    "stage6:export": "bun run scripts/stage6/export-streams.ts",
+    "stage6:analyze": "bun run scripts/stage6/analyze.ts",
+    "stage6:sample:resources": "bun run scripts/stage6/sample-resources.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

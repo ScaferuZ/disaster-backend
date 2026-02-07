@@ -3,6 +3,9 @@ import {
 	ACKS_STREAM,
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
+	ENABLE_PUSH_DELIVERY,
+	ENABLE_SSE_DELIVERY,
+	ENABLE_WS_DELIVERY,
 	ML_BASE_URL,
 	PUSH_SUBSCRIPTIONS_HASH,
 	REPORT_SYNC_STREAM,
@@ -15,20 +18,25 @@ const route = new Hono();
 route.get("/health", async (c) => {
 	const pong = await redis.ping();
 	const pushSubscriptions = await redis.hLen(PUSH_SUBSCRIPTIONS_HASH);
-	return c.json({
-		ok: true,
-		redis: pong,
-		mlBaseUrl: ML_BASE_URL,
-		channel: ALERTS_CHANNEL,
-		streams: {
-			alerts: ALERTS_STREAM,
-			acks: ACKS_STREAM,
-			reportSync: REPORT_SYNC_STREAM,
-			pushSubscriptions: PUSH_SUBSCRIPTIONS_HASH,
-		},
-		push: { configured: isPushConfigured(), subscriptions: pushSubscriptions },
-		ts: Date.now(),
+		return c.json({
+			ok: true,
+			redis: pong,
+			mlBaseUrl: ML_BASE_URL,
+			channel: ALERTS_CHANNEL,
+			streams: {
+				alerts: ALERTS_STREAM,
+				acks: ACKS_STREAM,
+				reportSync: REPORT_SYNC_STREAM,
+				pushSubscriptions: PUSH_SUBSCRIPTIONS_HASH,
+			},
+			delivery: {
+				sse: ENABLE_SSE_DELIVERY,
+				ws: ENABLE_WS_DELIVERY,
+				push: ENABLE_PUSH_DELIVERY,
+			},
+			push: { configured: isPushConfigured(), subscriptions: pushSubscriptions },
+			ts: Date.now(),
+		});
 	});
-});
 
 export default route;
