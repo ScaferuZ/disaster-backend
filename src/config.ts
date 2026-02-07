@@ -5,6 +5,8 @@ export const ML_BASE_URL = process.env.ML_BASE_URL ?? "http://localhost:8000";
 export const ALERTS_CHANNEL = process.env.ALERTS_CHANNEL ?? "alerts:high";
 export const ALERTS_STREAM = process.env.ALERTS_STREAM ?? "alerts:stream";
 export const ACKS_STREAM = process.env.ACKS_STREAM ?? "alerts:acks";
+export const REPORT_SYNC_STREAM = process.env.REPORT_SYNC_STREAM ?? "reports:sync";
+export const REPORT_DEDUPE_PREFIX = process.env.REPORT_DEDUPE_PREFIX ?? "reports:dedupe";
 export const PUSH_SUBSCRIPTIONS_HASH = process.env.PUSH_SUBSCRIPTIONS_HASH ?? "alerts:push:subscriptions";
 
 export const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? "";

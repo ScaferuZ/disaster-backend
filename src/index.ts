@@ -7,9 +7,9 @@ import healthRoute from "./routes/health";
 import sseRoute, { sseClients } from "./routes/sse";
 import wsRoute, { wsClients } from "./routes/ws";
 import pushRoute from "./routes/push";
-import swRoute from "./routes/sw";
 import ackRoute from "./routes/ack";
 import reportRoute from "./routes/report";
+import webRoute from "./routes/web";
 
 const app = new Hono();
 
@@ -49,7 +49,7 @@ app.route("/api", wsRoute);
 app.route("/api", pushRoute);
 app.route("/api", ackRoute);
 app.route("/api", reportRoute);
-app.route("/", swRoute);
+app.route("/", webRoute);
 
 export default {
 	port: PORT,

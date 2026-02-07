@@ -5,6 +5,7 @@ import {
 	ALERTS_STREAM,
 	ML_BASE_URL,
 	PUSH_SUBSCRIPTIONS_HASH,
+	REPORT_SYNC_STREAM,
 } from "../config";
 import { isPushConfigured } from "../lib/push";
 import { redis } from "../lib/redis";
@@ -22,6 +23,7 @@ route.get("/health", async (c) => {
 		streams: {
 			alerts: ALERTS_STREAM,
 			acks: ACKS_STREAM,
+			reportSync: REPORT_SYNC_STREAM,
 			pushSubscriptions: PUSH_SUBSCRIPTIONS_HASH,
 		},
 		push: { configured: isPushConfigured(), subscriptions: pushSubscriptions },

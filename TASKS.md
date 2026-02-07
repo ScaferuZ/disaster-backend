@@ -33,10 +33,10 @@ Definition of done:
 - Alert arrives as background notification; ACKs logged.
 
 ## Stage 5 - Offline-First Reporting
-- [ ] PWA report form.
-- [ ] IndexedDB queue + Background Sync.
-- [ ] Server endpoint to receive queued reports reliably.
-- [ ] Log sync success rate.
+- [x] PWA report form.
+- [x] IndexedDB queue + Background Sync.
+- [x] Server endpoint to receive queued reports reliably.
+- [x] Log sync success rate.
 
 Definition of done:
 - Offline report queues; reconnect auto-syncs; server logs and distributes.

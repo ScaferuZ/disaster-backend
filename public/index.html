@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stage 5 Offline Report Harness</title>
+  <style>
+    :root {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      color: #111;
+      background: #f8f8f8;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    form {
+      display: grid;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      max-width: 700px;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      font-size: 0.9rem;
+    }
+
+    input {
+      padding: 8px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 8px 10px;
+      border: 1px solid #222;
+      background: #111;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: #111;
+    }
+
+    #status {
+      font-size: 0.9rem;
+      max-width: 700px;
+    }
+
+    #log {
+      white-space: pre-wrap;
+      margin: 0;
+      background: #0d1117;
+      color: #d7e3f4;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 220px;
+      max-width: 700px;
+      overflow: auto;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stage 5 Offline-First Report Harness</h1>
+
+  <div id="status">Network: <strong id="network-state">unknown</strong></div>
+  <div class="actions">
+    <button type="button" id="push-toggle" class="secondary">Enable Push</button>
+  </div>
+
+  <form id="report-form">
+    <label>
+      lik_codes (comma separated)
+      <input id="lik_codes" value="wn-1,wn-2,wn-3,wn-4" required />
+    </label>
+
+    <label>
+      level_of_interaction_with_disaster
+      <input id="level_of_interaction_with_disaster" type="number" step="0.1" value="5" required />
+    </label>
+
+    <label>
+      age
+      <input id="age" type="number" step="0.1" value="35" required />
+    </label>
+
+    <label>
+      usage_duration
+      <input id="usage_duration" type="number" step="0.1" value="10" required />
+    </label>
+
+    <label>
+      min_frequency_of_usage
+      <input id="min_frequency_of_usage" type="number" step="0.1" value="10" required />
+    </label>
+
+    <label>
+      fishing_experience
+      <input id="fishing_experience" type="number" step="0.1" value="5" required />
+    </label>
+
+    <div class="actions">
+      <button type="submit">Submit Report</button>
+      <button type="button" id="flush-now" class="secondary">Flush Queue Now</button>
+    </div>
+  </form>
+
+  <pre id="log"></pre>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

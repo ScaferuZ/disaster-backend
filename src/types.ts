@@ -5,6 +5,8 @@ export type PredictionInput = {
 	usage_duration: number;
 	min_frequency_of_usage: number;
 	fishing_experience: number;
+	clientReportId?: string;
+	createdAtClient?: number;
 };
 
 export type MlResult = {

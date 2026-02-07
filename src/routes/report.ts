@@ -1,9 +1,30 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
-import { ALERTS_CHANNEL, ALERTS_STREAM, ML_BASE_URL } from "../config";
+import {
+	ALERTS_CHANNEL,
+	ALERTS_STREAM,
+	ML_BASE_URL,
+	REPORT_DEDUPE_PREFIX,
+	REPORT_SYNC_STREAM,
+} from "../config";
 import type { MlResult, PredictionInput } from "../types";
 
 const route = new Hono();
+const REPORT_DEDUPE_TTL_SECONDS = 7 * 24 * 60 * 60;
+const UUID_V4_REGEX =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+type ReportResponse = {
+	ok: true;
+	reportId: string;
+	serverTimestamp: number;
+	shouldDistribute: boolean;
+	alertEvent: Record<string, unknown>;
+};
+
+async function logReportSyncEvent(event: Record<string, unknown>) {
+	await redis.xAdd(REPORT_SYNC_STREAM, "*", { json: JSON.stringify(event) });
+}
 
 route.post("/report", async (c) => {
 	const input = await c.req.json<PredictionInput>().catch(() => null);
@@ -11,6 +32,41 @@ route.post("/report", async (c) => {
 
 	if (!Array.isArray(input.lik_codes) || input.lik_codes.length === 0) {
 		return c.json({ ok: false, error: "lik_codes required" }, 400);
+	}
+
+	if (input.clientReportId !== undefined) {
+		if (typeof input.clientReportId !== "string" || !UUID_V4_REGEX.test(input.clientReportId)) {
+			return c.json({ ok: false, error: "clientReportId must be a UUID string" }, 400);
+		}
+	}
+
+	if (input.createdAtClient !== undefined) {
+		if (!Number.isFinite(input.createdAtClient) || input.createdAtClient <= 0) {
+			return c.json({ ok: false, error: "createdAtClient must be a positive number" }, 400);
+		}
+	}
+
+	const receivedAtServer = Date.now();
+	const clientReportId = input.clientReportId;
+	const createdAtClient = input.createdAtClient;
+	const syncDelayMs = typeof createdAtClient === "number" ? receivedAtServer - createdAtClient : null;
+	const dedupeKey = clientReportId ? `${REPORT_DEDUPE_PREFIX}:${clientReportId}` : null;
+
+	if (dedupeKey) {
+		const existing = await redis.get(dedupeKey);
+		if (existing) {
+			const cached = JSON.parse(existing) as ReportResponse;
+			await logReportSyncEvent({
+				status: "DEDUPED",
+				clientReportId,
+				createdAtClient: createdAtClient ?? null,
+				receivedAtServer,
+				syncDelayMs,
+				reportId: cached.reportId,
+				alertId: cached.alertEvent.alertId,
+			});
+			return c.json({ ...cached, deduped: true });
+		}
 	}
 
 	const serverTimestamp = Date.now();
@@ -24,6 +80,15 @@ route.post("/report", async (c) => {
 
 	if (!mlRes.ok) {
 		const detail = await mlRes.text().catch(() => "");
+		await logReportSyncEvent({
+			status: "FAILED_ML",
+			clientReportId: clientReportId ?? null,
+			createdAtClient: createdAtClient ?? null,
+			receivedAtServer: Date.now(),
+			syncDelayMs,
+			reportId,
+			mlStatus: mlRes.status,
+		});
 		return c.json(
 			{ ok: false, error: "ML /predict failed", status: mlRes.status, detail },
 			502,
@@ -40,6 +105,10 @@ route.post("/report", async (c) => {
 		alertId: crypto.randomUUID(),
 		reportId,
 		serverTimestamp,
+		client: {
+			clientReportId: clientReportId ?? null,
+			createdAtClient: createdAtClient ?? null,
+		},
 		decision: {
 			is_high_risk: result.is_high_risk,
 			is_multisign: isMultisign,
@@ -57,13 +126,30 @@ route.post("/report", async (c) => {
 		await redis.publish(ALERTS_CHANNEL, alertJson);
 	}
 
-	return c.json({
+	const responsePayload: ReportResponse = {
 		ok: true,
 		reportId,
 		serverTimestamp,
 		shouldDistribute,
 		alertEvent,
+	};
+
+	if (dedupeKey) {
+		await redis.set(dedupeKey, JSON.stringify(responsePayload), { EX: REPORT_DEDUPE_TTL_SECONDS });
+	}
+
+	await logReportSyncEvent({
+		status: "ACCEPTED",
+		clientReportId: clientReportId ?? null,
+		createdAtClient: createdAtClient ?? null,
+		receivedAtServer: Date.now(),
+		syncDelayMs,
+		reportId,
+		alertId: alertEvent.alertId,
+		shouldDistribute,
 	});
+
+	return c.json(responsePayload);
 });
 
 export default route;
