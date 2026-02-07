@@ -2,9 +2,14 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 
 const route = new Hono();
+const noStore = {
+	onFound: (_path: string, c: { header: (name: string, value: string) => void }) => {
+		c.header("cache-control", "no-store");
+	},
+};
 
-route.get("/", serveStatic({ path: "./public/index.html" }));
-route.get("/app.js", serveStatic({ path: "./public/app.js" }));
-route.get("/sw.js", serveStatic({ path: "./public/sw.js" }));
+route.get("/", serveStatic({ path: "./public/index.html", ...noStore }));
+route.get("/app.js", serveStatic({ path: "./public/app.js", ...noStore }));
+route.get("/sw.js", serveStatic({ path: "./public/sw.js", ...noStore }));
 
 export default route;

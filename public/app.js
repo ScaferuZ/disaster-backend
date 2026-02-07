@@ -13,9 +13,14 @@ const pushToggleButton = document.getElementById("push-toggle");
 const logNode = document.getElementById("log");
 const networkState = document.getElementById("network-state");
 
+if (!form || !flushNowButton || !pushToggleButton || !logNode || !networkState) {
+  throw new Error("required UI element missing; reload page and ensure latest index.html is loaded");
+}
+
 function log(message) {
   const line = `[${new Date().toISOString()}] ${message}`;
   logNode.textContent = `${line}\n${logNode.textContent}`;
+  console.log(line);
 }
 
 function updateNetworkState() {
@@ -44,6 +49,21 @@ function setPushToggleState({ enabled, disabled }) {
   pushToggleButton.textContent = enabled ? "Disable Push" : "Enable Push";
 }
 
+async function withTimeout(promise, timeoutMs, label) {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function getPushSubscription() {
   if (!("serviceWorker" in navigator)) return null;
   const reg = await navigator.serviceWorker.ready;
@@ -65,11 +85,14 @@ async function subscribePush() {
     throw new Error("push api unsupported in this browser");
   }
 
+  log("push: requesting notification permission");
   const permission = await Notification.requestPermission();
+  log(`push: notification permission result = ${permission}`);
   if (permission !== "granted") {
     throw new Error(`notification permission is ${permission}`);
   }
 
+  log("push: fetching VAPID public key");
   const vapidResponse = await fetch(PUSH_VAPID_ENDPOINT);
   if (!vapidResponse.ok) {
     const detail = await vapidResponse.text().catch(() => "");
@@ -82,15 +105,30 @@ async function subscribePush() {
     throw new Error("missing VAPID public key from backend");
   }
 
+  log("push: resolving service worker registration");
   const reg = await navigator.serviceWorker.ready;
-  let subscription = await reg.pushManager.getSubscription();
+  log("push: checking existing subscription");
+  let subscription = await withTimeout(
+    reg.pushManager.getSubscription(),
+    10000,
+    "getSubscription",
+  );
   if (!subscription) {
-    subscription = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey),
-    });
+    log("push: creating browser subscription");
+    subscription = await withTimeout(
+      reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      }),
+      15000,
+      "pushManager.subscribe",
+    );
+    log("push: browser subscription created");
+  } else {
+    log("push: existing browser subscription found");
   }
 
+  log("push: sending subscription to backend");
   const subscribeResponse = await fetch(PUSH_SUBSCRIBE_ENDPOINT, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -123,6 +161,7 @@ async function unsubscribePush() {
 }
 
 async function togglePush() {
+  log("push toggle clicked");
   try {
     const subscription = await getPushSubscription();
     if (subscription) {
@@ -327,7 +366,9 @@ flushNowButton.addEventListener("click", async () => {
   await flushQueue("manual");
 });
 pushToggleButton.addEventListener("click", () => {
-  togglePush();
+  togglePush().catch((err) => {
+    log(`push toggle unhandled error: ${String(err)}`);
+  });
 });
 
 form.addEventListener("submit", (event) => {
@@ -337,6 +378,10 @@ form.addEventListener("submit", (event) => {
 });
 
 (async () => {
+  window.addEventListener("error", (event) => {
+    log(`window error: ${event.message}`);
+  });
+
   updateNetworkState();
   await setupServiceWorker();
   await refreshPushToggle();
