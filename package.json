@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "push:vapid:generate": "bunx web-push generate-vapid-keys",
+    "stage6:reset": "bun run scripts/stage6/reset-run.ts",
+    "stage6:run": "bun run scripts/stage6/run-iteration.ts",
     "stage6:load": "bun run scripts/stage6/run-report-load.ts",
     "stage6:export": "bun run scripts/stage6/export-streams.ts",
     "stage6:analyze": "bun run scripts/stage6/analyze.ts",

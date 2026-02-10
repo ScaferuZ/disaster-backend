@@ -21,6 +21,8 @@ A browser page for SSE/WS experiments with one-click connections and automatic A
 Use this page during SSE/WS runs so ACK data is consistently captured.
 
 ### 3) Stage 6 Scripts
+- `bun run stage6:run`
+  - full single-iteration orchestrator: reset(before) -> resource sampling -> load -> export -> wait sampler -> analyze -> reset(after).
 - `bun run stage6:load`
   - sends repeatable report traffic to `/api/report` with `clientReportId` + `createdAtClient`.
 - `bun run stage6:export`
@@ -32,6 +34,27 @@ Use this page during SSE/WS runs so ACK data is consistently captured.
 
 ## Canonical Trial Workflow
 
+### One-command Iteration (Recommended)
+```sh
+bun run stage6:run -- --label=sse_3g_r1
+```
+
+Optional overrides:
+```sh
+bun run stage6:run -- \
+  --label=ws_normal_r2 \
+  --pid=<BACKEND_PID> \
+  --duration-s=180 \
+  --count=50 \
+  --interval-ms=1000 \
+  --base-url=http://localhost:3000
+```
+
+Notes:
+- `--label` is required if you do not want interactive prompt.
+- `protocol` and `network` are inferred from label (`sse_3g_r1` -> `SSE`, `3G`).
+- Add `--skip-final-reset` if you want data to remain in Redis after run completion.
+
 ### 0) Choose run labels
 Example:
 - protocol: `SSE`
@@ -40,6 +63,11 @@ Example:
 
 Output base directory:
 `experiments/stage6/sse_3g_r1`
+
+Reset data before each run:
+```sh
+bun run stage6:reset
+```
 
 ### 1) Start backend with protocol gating
 
