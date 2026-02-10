@@ -16,6 +16,7 @@ import pushRoute from "./routes/push";
 import ackRoute from "./routes/ack";
 import reportRoute from "./routes/report";
 import webRoute from "./routes/web";
+import docsRoute from "./routes/docs";
 
 const app = new Hono();
 
@@ -61,6 +62,7 @@ app.route("/api", wsRoute);
 app.route("/api", pushRoute);
 app.route("/api", ackRoute);
 app.route("/api", reportRoute);
+app.route("/api", docsRoute);
 app.route("/", webRoute);
 
 export default {
