@@ -1,8 +1,7 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-docker.io/scaferuzzz/disaster-backend:latest}
+    pull_policy: always
     container_name: thesis-hub
     restart: unless-stopped
     ports:
