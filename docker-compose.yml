@@ -1,12 +1,48 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thesis-hub
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      PORT: "3000"
+      REDIS_URL: redis://redis:6379
+      ML_BASE_URL: ${ML_BASE_URL:-http://host.docker.internal:8000}
+      ALERTS_CHANNEL: ${ALERTS_CHANNEL:-alerts:high}
+      ALERTS_STREAM: ${ALERTS_STREAM:-alerts:stream}
+      ACKS_STREAM: ${ACKS_STREAM:-alerts:acks}
+      REPORT_SYNC_STREAM: ${REPORT_SYNC_STREAM:-reports:sync}
+      REPORT_DEDUPE_PREFIX: ${REPORT_DEDUPE_PREFIX:-reports:dedupe}
+      PUSH_SUBSCRIPTIONS_HASH: ${PUSH_SUBSCRIPTIONS_HASH:-alerts:push:subscriptions}
+      ENABLE_SSE_DELIVERY: ${ENABLE_SSE_DELIVERY:-true}
+      ENABLE_WS_DELIVERY: ${ENABLE_WS_DELIVERY:-true}
+      ENABLE_PUSH_DELIVERY: ${ENABLE_PUSH_DELIVERY:-true}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   redis:
     image: redis:7-alpine
     container_name: thesis-redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   redis_data:

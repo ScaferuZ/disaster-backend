@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+bun.lockb
+Dockerfile
+docker-compose.yml
+.env
+.env.*
+*.log
+coverage
+experiments
+.agent
+docs
