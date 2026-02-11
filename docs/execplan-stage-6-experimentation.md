@@ -16,6 +16,7 @@ After this change, the repository provides a reproducible Stage 6 experimentatio
 - [x] (2026-02-07 14:53Z) Added Stage 6 scripts for load generation, stream export, analysis, and process resource sampling under `scripts/stage6/`.
 - [x] (2026-02-07 14:54Z) Added receiver harness page for automated SSE/WS ACK generation (`/receiver`).
 - [x] (2026-02-07 14:54Z) Wrote Stage 6 runbook and validated script/runtime baseline (`bunx tsc --noEmit`, load/analyze smoke; export requires live Redis).
+- [x] (2026-02-07 15:00Z) Added single-command iteration orchestrator (`stage6:run`) to chain reset, sampling, load, export, analyze, and final reset.
 
 ## Surprises & Discoveries
 
@@ -37,6 +38,10 @@ After this change, the repository provides a reproducible Stage 6 experimentatio
 
 - Decision: Add browser receiver harness (`/receiver`) for SSE/WS ACK automation.
   Rationale: Reduces manual console setup and improves repeatability of latency measurements.
+  Date/Author: 2026-02-07 / Codex
+
+- Decision: Add `stage6:run` orchestration script in addition to atomic scripts.
+  Rationale: Users requested one-command execution per iteration label to reduce operator error and speed repeated trials.
   Date/Author: 2026-02-07 / Codex
 
 ## Outcomes & Retrospective
