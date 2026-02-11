@@ -15,6 +15,9 @@ route.post("/ack", async (c) => {
 	if (!input.transport) {
 		return c.json({ ok: false, error: "transport required" }, 400);
 	}
+	if (input.transport !== "SSE" && input.transport !== "WS" && input.transport !== "PUSH") {
+		return c.json({ ok: false, error: "transport must be SSE, WS, or PUSH" }, 400);
+	}
 	if (typeof input.receivedAtClient !== "number" || typeof input.serverTimestamp !== "number") {
 		return c.json({
 			ok: false,
