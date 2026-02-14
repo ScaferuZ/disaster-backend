@@ -27,3 +27,37 @@ export const ENABLE_PUSH_DELIVERY = parseBoolEnv(process.env.ENABLE_PUSH_DELIVER
 export const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? "";
 export const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY ?? "";
 export const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY ?? "";
+
+function parseCsvEnv(value: string | undefined, fallback: string[]) {
+	if (!value) return fallback;
+	const items = value
+		.split(",")
+		.map((item) => item.trim())
+		.filter((item) => item.length > 0);
+	return items.length > 0 ? items : fallback;
+}
+
+export const JWT_AUTH_ENABLED = parseBoolEnv(process.env.JWT_AUTH_ENABLED, false);
+export const JWT_SECRET = process.env.JWT_SECRET ?? "";
+export const JWT_EXPIRES_SECONDS = Number(process.env.JWT_EXPIRES_SECONDS ?? 86400);
+export const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME ?? "auth_token";
+export const JWT_PUBLIC_PATHS = parseCsvEnv(process.env.JWT_PUBLIC_PATHS, [
+	"/api/health",
+	"/api/docs",
+	"/api/openapi.json",
+	"/api/push/vapid-public-key",
+	"/api/auth/register",
+	"/api/auth/login",
+]);
+export const AUTH_USER_KEY_PREFIX = process.env.AUTH_USER_KEY_PREFIX ?? "auth:user";
+export const AUTH_USER_EMAIL_KEY_PREFIX =
+	process.env.AUTH_USER_EMAIL_KEY_PREFIX ?? "auth:user:email";
+export const AUTH_USER_IDENTITY_KEY_PREFIX =
+	process.env.AUTH_USER_IDENTITY_KEY_PREFIX ?? "auth:user:identity";
+
+if (JWT_AUTH_ENABLED && !JWT_SECRET) {
+	throw new Error("JWT_AUTH_ENABLED=true requires JWT_SECRET to be set");
+}
+if (!Number.isFinite(JWT_EXPIRES_SECONDS) || JWT_EXPIRES_SECONDS <= 0) {
+	throw new Error("JWT_EXPIRES_SECONDS must be a positive number");
+}

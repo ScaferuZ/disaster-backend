@@ -1,4 +1,5 @@
 const ACK_ENDPOINT = "/api/ack";
+const API_TOKEN_KEY = "authToken";
 
 const connectSseButton = document.getElementById("connect-sse");
 const disconnectSseButton = document.getElementById("disconnect-sse");
@@ -20,6 +21,20 @@ function log(message) {
   console.log(line);
 }
 
+function getAuthToken() {
+  const token = localStorage.getItem(API_TOKEN_KEY)?.trim();
+  return token || null;
+}
+
+function authHeaders(base = {}) {
+  const token = getAuthToken();
+  if (!token) return base;
+  return {
+    ...base,
+    authorization: `Bearer ${token}`,
+  };
+}
+
 async function postAck(alert, transport) {
   if (!alert || typeof alert.alertId !== "string" || typeof alert.serverTimestamp !== "number") {
     return;
@@ -27,7 +42,7 @@ async function postAck(alert, transport) {
 
   const response = await fetch(ACK_ENDPOINT, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: authHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({
       alertId: alert.alertId,
       transport,
@@ -48,7 +63,9 @@ function connectSse() {
     return;
   }
 
-  sse = new EventSource("/api/sse");
+  const token = getAuthToken();
+  const sseUrl = token ? `/api/sse?token=${encodeURIComponent(token)}` : "/api/sse";
+  sse = new EventSource(sseUrl);
   log("SSE connecting");
 
   sse.addEventListener("open", () => log("SSE open"));
@@ -86,7 +103,9 @@ function connectWs() {
     return;
   }
 
-  ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/ws`);
+  const token = getAuthToken();
+  const wsPath = token ? `/api/ws?token=${encodeURIComponent(token)}` : "/api/ws";
+  ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${wsPath}`);
   log("WS connecting");
 
   ws.addEventListener("open", () => log("WS open"));

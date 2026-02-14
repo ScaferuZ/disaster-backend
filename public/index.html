@@ -88,6 +88,31 @@
   <h1>Stage 5 Offline-First Report Harness</h1>
 
   <div id="status">Network: <strong id="network-state">unknown</strong></div>
+  <div id="auth-status">Auth: <strong id="auth-state">anonymous</strong></div>
+  <form id="auth-form">
+    <label>
+      Nama
+      <input id="auth_nama" value="Budi Nelayan" />
+    </label>
+    <label>
+      No. Identitas Nelayan
+      <input id="auth_no_identitas_nelayan" value="NLYN-001122" />
+    </label>
+    <label>
+      Email
+      <input id="auth_email" type="email" value="budi@example.com" required />
+    </label>
+    <label>
+      Password
+      <input id="auth_password" type="password" value="strongpass123" required />
+    </label>
+    <div class="actions">
+      <button type="button" id="auth-register" class="secondary">Register</button>
+      <button type="button" id="auth-login">Login</button>
+      <button type="button" id="auth-logout" class="secondary">Logout</button>
+    </div>
+  </form>
+
   <div class="actions">
     <button type="button" id="push-toggle" class="secondary">Enable Push</button>
   </div>

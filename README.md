@@ -95,6 +95,16 @@ PUSH_SUBSCRIPTIONS_HASH=alerts:push:subscriptions
 ENABLE_SSE_DELIVERY=true
 ENABLE_WS_DELIVERY=true
 ENABLE_PUSH_DELIVERY=true
+# Optional JWT auth for /api/*
+JWT_AUTH_ENABLED=false
+JWT_SECRET=replace-with-long-random-secret
+JWT_EXPIRES_SECONDS=86400
+JWT_COOKIE_NAME=auth_token
+JWT_PUBLIC_PATHS=/api/health,/api/docs,/api/openapi.json,/api/push/vapid-public-key,/api/auth/register,/api/auth/login
+# Optional auth key prefixes
+AUTH_USER_KEY_PREFIX=auth:user
+AUTH_USER_EMAIL_KEY_PREFIX=auth:user:email
+AUTH_USER_IDENTITY_KEY_PREFIX=auth:user:identity
 # Optional for push
 VAPID_SUBJECT=mailto:you@example.com
 VAPID_PUBLIC_KEY=
@@ -132,6 +142,10 @@ Default local URLs:
 
 Main endpoints:
 - `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
 - `POST /api/report`
 - `POST /api/ack`
 - `GET /api/sse`
@@ -154,6 +168,38 @@ curl -X POST http://localhost:3000/api/report \
     "fishing_experience": 5.0,
     "clientReportId": "11111111-1111-4111-8111-111111111111",
     "createdAtClient": 1739270400000
+  }'
+```
+
+If JWT auth is enabled:
+
+```bash
+TOKEN="<jwt-from-login>"
+curl -X POST http://localhost:3000/api/report \
+  -H "authorization: Bearer ${TOKEN}" \
+  -H "content-type: application/json" \
+  -d '{ "...": "..." }'
+```
+
+## Example: Register and Login
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "content-type: application/json" \
+  -d '{
+    "nama": "Budi Nelayan",
+    "noIdentitasNelayan": "NLYN-001122",
+    "email": "budi@example.com",
+    "password": "strongpass123"
+  }'
+```
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "content-type: application/json" \
+  -d '{
+    "email": "budi@example.com",
+    "password": "strongpass123"
   }'
 ```
 

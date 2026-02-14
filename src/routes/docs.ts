@@ -3,6 +3,10 @@ import {
 	ACKS_STREAM,
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
+	AUTH_USER_EMAIL_KEY_PREFIX,
+	AUTH_USER_IDENTITY_KEY_PREFIX,
+	AUTH_USER_KEY_PREFIX,
+	JWT_PUBLIC_PATHS,
 	PUSH_SUBSCRIPTIONS_HASH,
 	REPORT_SYNC_STREAM,
 } from "../config";
@@ -25,6 +29,7 @@ const openApiDoc = {
 		{ name: "SSE", description: "Server-Sent Events delivery channel" },
 		{ name: "WebSocket", description: "WebSocket delivery channel" },
 		{ name: "Push", description: "Web Push subscription and key management" },
+		{ name: "Auth", description: "User registration and JWT authentication" },
 		{ name: "Docs", description: "OpenAPI and Swagger documentation endpoints" },
 	],
 	paths: {
@@ -43,6 +48,7 @@ const openApiDoc = {
 			post: {
 				summary: "Submit a disaster report for ML inference and distribution",
 				tags: ["Report"],
+				security: [{ bearerAuth: [] }],
 				requestBody: {
 					required: true,
 					content: {
@@ -62,6 +68,7 @@ const openApiDoc = {
 			post: {
 				summary: "Send client receipt ACK for SSE/WS/PUSH delivery",
 				tags: ["ACK"],
+				security: [{ bearerAuth: [] }],
 				requestBody: {
 					required: true,
 					content: {
@@ -80,6 +87,7 @@ const openApiDoc = {
 			get: {
 				summary: "Server-Sent Events alert stream",
 				tags: ["SSE"],
+				security: [{ bearerAuth: [] }],
 				description: "Streams `hello`, `ping`, and `alert` events as SSE.",
 				responses: {
 					"200": { description: "SSE stream opened" },
@@ -90,6 +98,7 @@ const openApiDoc = {
 			get: {
 				summary: "WebSocket alert stream endpoint",
 				tags: ["WebSocket"],
+				security: [{ bearerAuth: [] }],
 				description: "Upgrade request to WebSocket for realtime alert messages.",
 				responses: {
 					"101": { description: "Switching Protocols" },
@@ -110,6 +119,7 @@ const openApiDoc = {
 			post: {
 				summary: "Store browser push subscription",
 				tags: ["Push"],
+				security: [{ bearerAuth: [] }],
 				requestBody: {
 					required: true,
 					content: {
@@ -129,6 +139,7 @@ const openApiDoc = {
 			post: {
 				summary: "Remove browser push subscription by endpoint",
 				tags: ["Push"],
+				security: [{ bearerAuth: [] }],
 				requestBody: {
 					required: true,
 					content: {
@@ -168,8 +179,74 @@ const openApiDoc = {
 				},
 			},
 		},
+		"/api/auth/register": {
+			post: {
+				summary: "Register a nelayan account",
+				tags: ["Auth"],
+				requestBody: {
+					required: true,
+					content: {
+						"application/json": {
+							schema: { $ref: "#/components/schemas/RegisterInput" },
+						},
+					},
+				},
+				responses: {
+					"201": { description: "Account created" },
+					"400": { description: "Invalid payload" },
+					"409": { description: "Email or identity already registered" },
+				},
+			},
+		},
+		"/api/auth/login": {
+			post: {
+				summary: "Login and issue JWT",
+				tags: ["Auth"],
+				requestBody: {
+					required: true,
+					content: {
+						"application/json": {
+							schema: { $ref: "#/components/schemas/LoginInput" },
+						},
+					},
+				},
+				responses: {
+					"200": { description: "JWT issued" },
+					"400": { description: "Invalid payload" },
+					"401": { description: "Invalid credentials" },
+				},
+			},
+		},
+		"/api/auth/logout": {
+			post: {
+				summary: "Clear auth cookie",
+				tags: ["Auth"],
+				security: [{ bearerAuth: [] }],
+				responses: {
+					"200": { description: "Logged out" },
+				},
+			},
+		},
+		"/api/auth/me": {
+			get: {
+				summary: "Get decoded JWT payload",
+				tags: ["Auth"],
+				security: [{ bearerAuth: [] }],
+				responses: {
+					"200": { description: "Authenticated payload" },
+					"401": { description: "Missing/invalid token" },
+				},
+			},
+		},
 	},
 	components: {
+		securitySchemes: {
+			bearerAuth: {
+				type: "http",
+				scheme: "bearer",
+				bearerFormat: "JWT",
+			},
+		},
 		schemas: {
 			PredictionInput: {
 				type: "object",
@@ -220,6 +297,34 @@ const openApiDoc = {
 					},
 				},
 			},
+			RegisterInput: {
+				type: "object",
+				required: ["nama", "noIdentitasNelayan", "email", "password"],
+				properties: {
+					nama: { type: "string" },
+					noIdentitasNelayan: { type: "string" },
+					email: { type: "string", format: "email" },
+					password: { type: "string", minLength: 8 },
+				},
+			},
+			LoginInput: {
+				type: "object",
+				required: ["email", "password"],
+				properties: {
+					email: { type: "string", format: "email" },
+					password: { type: "string" },
+				},
+			},
+			PublicUser: {
+				type: "object",
+				properties: {
+					userId: { type: "string" },
+					nama: { type: "string" },
+					noIdentitasNelayan: { type: "string" },
+					email: { type: "string", format: "email" },
+					createdAt: { type: "number" },
+				},
+			},
 			StreamNames: {
 				type: "object",
 				properties: {
@@ -227,6 +332,9 @@ const openApiDoc = {
 					acks: { type: "string", example: ACKS_STREAM },
 					reportSync: { type: "string", example: REPORT_SYNC_STREAM },
 					pushSubscriptions: { type: "string", example: PUSH_SUBSCRIPTIONS_HASH },
+					authUsers: { type: "string", example: AUTH_USER_KEY_PREFIX },
+					authUserEmailIndex: { type: "string", example: AUTH_USER_EMAIL_KEY_PREFIX },
+					authUserIdentityIndex: { type: "string", example: AUTH_USER_IDENTITY_KEY_PREFIX },
 				},
 			},
 			HealthDeliveryFlags: {
@@ -244,6 +352,17 @@ const openApiDoc = {
 					subscriptions: { type: "number" },
 				},
 			},
+			HealthAuth: {
+				type: "object",
+				properties: {
+					enabled: { type: "boolean" },
+					publicPaths: {
+						type: "array",
+						items: { type: "string" },
+						example: JWT_PUBLIC_PATHS,
+					},
+				},
+			},
 			HealthResponse: {
 				type: "object",
 				properties: {
@@ -253,6 +372,7 @@ const openApiDoc = {
 					channel: { type: "string", example: ALERTS_CHANNEL },
 					streams: { $ref: "#/components/schemas/StreamNames" },
 					delivery: { $ref: "#/components/schemas/HealthDeliveryFlags" },
+					auth: { $ref: "#/components/schemas/HealthAuth" },
 					push: { $ref: "#/components/schemas/HealthPush" },
 					ts: { type: "number" },
 				},

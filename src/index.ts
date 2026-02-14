@@ -17,8 +17,11 @@ import ackRoute from "./routes/ack";
 import reportRoute from "./routes/report";
 import webRoute from "./routes/web";
 import docsRoute from "./routes/docs";
+import authRoute from "./routes/auth";
+import { apiJwtAuth } from "./middleware/jwtAuth";
 
 const app = new Hono();
+app.use("/api/*", apiJwtAuth);
 
 await initRedis();
 initWebPush();
@@ -63,6 +66,7 @@ app.route("/api", pushRoute);
 app.route("/api", ackRoute);
 app.route("/api", reportRoute);
 app.route("/api", docsRoute);
+app.route("/api", authRoute);
 app.route("/", webRoute);
 
 export default {

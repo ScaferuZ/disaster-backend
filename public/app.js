@@ -6,14 +6,34 @@ const SYNC_TAG = "report-sync";
 const PUSH_VAPID_ENDPOINT = "/api/push/vapid-public-key";
 const PUSH_SUBSCRIBE_ENDPOINT = "/api/push/subscribe";
 const PUSH_UNSUBSCRIBE_ENDPOINT = "/api/push/unsubscribe";
+const AUTH_REGISTER_ENDPOINT = "/api/auth/register";
+const AUTH_LOGIN_ENDPOINT = "/api/auth/login";
+const AUTH_LOGOUT_ENDPOINT = "/api/auth/logout";
+const API_TOKEN_KEY = "authToken";
 
 const form = document.getElementById("report-form");
+const authForm = document.getElementById("auth-form");
+const authRegisterButton = document.getElementById("auth-register");
+const authLoginButton = document.getElementById("auth-login");
+const authLogoutButton = document.getElementById("auth-logout");
 const flushNowButton = document.getElementById("flush-now");
 const pushToggleButton = document.getElementById("push-toggle");
 const logNode = document.getElementById("log");
 const networkState = document.getElementById("network-state");
+const authState = document.getElementById("auth-state");
 
-if (!form || !flushNowButton || !pushToggleButton || !logNode || !networkState) {
+if (
+  !form ||
+  !authForm ||
+  !authRegisterButton ||
+  !authLoginButton ||
+  !authLogoutButton ||
+  !flushNowButton ||
+  !pushToggleButton ||
+  !logNode ||
+  !networkState ||
+  !authState
+) {
   throw new Error("required UI element missing; reload page and ensure latest index.html is loaded");
 }
 
@@ -21,6 +41,90 @@ function log(message) {
   const line = `[${new Date().toISOString()}] ${message}`;
   logNode.textContent = `${line}\n${logNode.textContent}`;
   console.log(line);
+}
+
+function getAuthToken() {
+  const token = localStorage.getItem(API_TOKEN_KEY)?.trim();
+  return token || null;
+}
+
+function getAuthEmail() {
+  const value = document.getElementById("auth_email").value?.trim();
+  return value || "";
+}
+
+function updateAuthState() {
+  const token = getAuthToken();
+  authState.textContent = token ? `authenticated (${getAuthEmail() || "token"})` : "anonymous";
+}
+
+function authHeaders(base = {}) {
+  const token = getAuthToken();
+  if (!token) return base;
+  return {
+    ...base,
+    authorization: `Bearer ${token}`,
+  };
+}
+
+function getAuthFormValues() {
+  return {
+    nama: document.getElementById("auth_nama").value?.trim() ?? "",
+    noIdentitasNelayan: document.getElementById("auth_no_identitas_nelayan").value?.trim() ?? "",
+    email: getAuthEmail(),
+    password: document.getElementById("auth_password").value ?? "",
+  };
+}
+
+async function registerAuthUser() {
+  const payload = getAuthFormValues();
+  const response = await fetch(AUTH_REGISTER_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`register failed (${response.status}) ${detail}`);
+  }
+
+  return response.json();
+}
+
+async function loginAuthUser() {
+  const payload = getAuthFormValues();
+  const response = await fetch(AUTH_LOGIN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      email: payload.email,
+      password: payload.password,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`login failed (${response.status}) ${detail}`);
+  }
+
+  const body = await response.json();
+  if (!body?.token) {
+    throw new Error("login response missing token");
+  }
+
+  localStorage.setItem(API_TOKEN_KEY, body.token);
+  updateAuthState();
+  return body;
+}
+
+async function logoutAuthUser() {
+  await fetch(AUTH_LOGOUT_ENDPOINT, {
+    method: "POST",
+    headers: authHeaders(),
+  }).catch(() => {});
+  localStorage.removeItem(API_TOKEN_KEY);
+  updateAuthState();
 }
 
 function updateNetworkState() {
@@ -93,7 +197,9 @@ async function subscribePush() {
   }
 
   log("push: fetching VAPID public key");
-  const vapidResponse = await fetch(PUSH_VAPID_ENDPOINT);
+  const vapidResponse = await fetch(PUSH_VAPID_ENDPOINT, {
+    headers: authHeaders(),
+  });
   if (!vapidResponse.ok) {
     const detail = await vapidResponse.text().catch(() => "");
     throw new Error(`failed to fetch VAPID key (${vapidResponse.status}) ${detail}`);
@@ -131,7 +237,7 @@ async function subscribePush() {
   log("push: sending subscription to backend");
   const subscribeResponse = await fetch(PUSH_SUBSCRIBE_ENDPOINT, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: authHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(subscription.toJSON()),
   });
 
@@ -152,7 +258,7 @@ async function unsubscribePush() {
 
   await fetch(PUSH_UNSUBSCRIBE_ENDPOINT, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: authHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({ endpoint: existing.endpoint }),
   }).catch(() => {});
 
@@ -234,7 +340,7 @@ async function removeQueuedReport(clientReportId) {
 async function sendReport(report) {
   const response = await fetch(REPORT_ENDPOINT, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: authHeaders({ "content-type": "application/json" }),
     body: JSON.stringify(report),
   });
 
@@ -362,6 +468,36 @@ window.addEventListener("offline", () => {
   log("network offline");
 });
 
+authRegisterButton.addEventListener("click", () => {
+  registerAuthUser()
+    .then((result) => {
+      log(`registered user ${result?.user?.email ?? "unknown"}`);
+    })
+    .catch((err) => {
+      log(`register error: ${String(err)}`);
+    });
+});
+
+authLoginButton.addEventListener("click", () => {
+  loginAuthUser()
+    .then((result) => {
+      log(`logged in ${result?.user?.email ?? "unknown"}`);
+    })
+    .catch((err) => {
+      log(`login error: ${String(err)}`);
+    });
+});
+
+authLogoutButton.addEventListener("click", () => {
+  logoutAuthUser()
+    .then(() => {
+      log("logged out");
+    })
+    .catch((err) => {
+      log(`logout error: ${String(err)}`);
+    });
+});
+
 flushNowButton.addEventListener("click", async () => {
   await flushQueue("manual");
 });
@@ -382,6 +518,7 @@ form.addEventListener("submit", (event) => {
     log(`window error: ${event.message}`);
   });
 
+  updateAuthState();
   updateNetworkState();
   await setupServiceWorker();
   await refreshPushToggle();
