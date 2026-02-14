@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { websocket } from "hono/bun";
+import { cors } from "hono/cors";
 import { initRedis, sub } from "./lib/redis";
 import { initWebPush, sendPushAlertToAll } from "./lib/push";
 import {
@@ -21,6 +22,7 @@ import authRoute from "./routes/auth";
 import { apiJwtAuth } from "./middleware/jwtAuth";
 
 const app = new Hono();
+app.use("/api/*", cors());
 app.use("/api/*", apiJwtAuth);
 
 await initRedis();
