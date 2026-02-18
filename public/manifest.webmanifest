@@ -1,0 +1,24 @@
+{
+  "name": "Disaster Report Hub",
+  "short_name": "DisasterHub",
+  "description": "Offline-first disaster report harness with push alert delivery.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f8f8",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
