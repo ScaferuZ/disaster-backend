@@ -25,6 +25,7 @@ const openApiDoc = {
 	tags: [
 		{ name: "Health", description: "Service health and runtime configuration" },
 		{ name: "Report", description: "Report ingestion and ML-triggered alert generation" },
+		{ name: "History", description: "Read submitted report history from alerts stream" },
 		{ name: "ACK", description: "Client delivery acknowledgement logging" },
 		{ name: "SSE", description: "Server-Sent Events delivery channel" },
 		{ name: "WebSocket", description: "WebSocket delivery channel" },
@@ -61,6 +62,32 @@ const openApiDoc = {
 					"200": { description: "Report accepted and canonical alert generated" },
 					"400": { description: "Invalid payload" },
 					"502": { description: "ML service failure" },
+				},
+			},
+		},
+		"/api/history": {
+			get: {
+				summary: "Get submitted laporan history",
+				tags: ["History"],
+				security: [{ bearerAuth: [] }],
+				parameters: [
+					{
+						in: "query",
+						name: "limit",
+						required: false,
+						schema: { type: "integer", minimum: 1, maximum: 100, default: 20 },
+					},
+					{
+						in: "query",
+						name: "mine",
+						required: false,
+						schema: { type: "boolean", default: true },
+						description: "When true, return only laporan submitted by authenticated user",
+					},
+				],
+				responses: {
+					"200": { description: "History rows from alerts stream" },
+					"400": { description: "Invalid query parameter" },
 				},
 			},
 		},

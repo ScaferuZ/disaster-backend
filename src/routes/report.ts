@@ -34,6 +34,10 @@ function sleep(ms: number) {
 }
 
 route.post("/report", async (c) => {
+	const jwtPayload = c.get("jwtPayload") as { sub?: unknown; email?: unknown } | undefined;
+	const reporterUserId = typeof jwtPayload?.sub === "string" ? jwtPayload.sub : null;
+	const reporterEmail = typeof jwtPayload?.email === "string" ? jwtPayload.email : null;
+
 	const input = await c.req.json<PredictionInput>().catch(() => null);
 	if (!input) return c.json({ ok: false, error: "Invalid JSON" }, 400);
 
@@ -149,6 +153,8 @@ route.post("/report", async (c) => {
 			client: {
 				clientReportId: clientReportId ?? null,
 				createdAtClient: createdAtClient ?? null,
+				userId: reporterUserId,
+				email: reporterEmail,
 			},
 			decision: {
 				is_high_risk: result.is_high_risk,

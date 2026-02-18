@@ -147,6 +147,7 @@ Main endpoints:
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 - `POST /api/report`
+- `GET /api/history`
 - `POST /api/ack`
 - `GET /api/sse`
 - `GET /api/ws`
@@ -179,6 +180,14 @@ curl -X POST http://localhost:3000/api/report \
   -H "authorization: Bearer ${TOKEN}" \
   -H "content-type: application/json" \
   -d '{ "...": "..." }'
+```
+
+## Example: Get History
+
+```bash
+TOKEN="<jwt-from-login>"
+curl "http://localhost:3000/api/history?limit=20&mine=true" \
+  -H "authorization: Bearer ${TOKEN}"
 ```
 
 ## Example: Register and Login
