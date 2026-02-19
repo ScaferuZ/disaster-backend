@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { websocket } from "hono/bun";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { initRedis, sub } from "./lib/redis";
 import { initWebPush, sendPushAlertToAll } from "./lib/push";
 import {
@@ -25,6 +26,23 @@ import { apiJwtAuth } from "./middleware/jwtAuth";
 const app = new Hono();
 app.use("/api/*", cors());
 app.use("/api/*", apiJwtAuth);
+app.onError((err, c) => {
+	console.error("[unhandled-error]", {
+		path: c.req.path,
+		method: c.req.method,
+		error: err instanceof Error ? err.message : String(err),
+	});
+
+	if (err instanceof HTTPException) {
+		return err.getResponse();
+	}
+
+	if (c.req.path.startsWith("/api/")) {
+		return c.json({ ok: false, error: "internal server error" }, 500);
+	}
+
+	return c.text("Internal Server Error", 500);
+});
 
 await initRedis();
 initWebPush();
