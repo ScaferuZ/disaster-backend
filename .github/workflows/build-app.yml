@@ -55,8 +55,8 @@ jobs:
           password: ${{ secrets.OMV_PASSWORD }}
           script: |
             echo "Successfully connected via Tailscale!"
-            docker pull scaferuzzz/disaster-backend:latest
-            docker stop disaster-backend || true
-            docker rm disaster-backend || true
-            docker run -d --name disaster-backend -p 8080:8080 scaferuzzz/disaster-backend:latest
+            cd /srv/dev-disk-by-uuid-48285f96-d7b9-493d-9c36-6747aaba3c4c/compose/thesis-services
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker compose ps
             docker image prune -f
