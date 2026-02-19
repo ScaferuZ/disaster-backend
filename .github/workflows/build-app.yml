@@ -1,0 +1,62 @@
+name: Docker Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/scaferuzzz/disaster-backend
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Deploy to OMV via Tailscale
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.OMV_TS_IP }} 
+          username: ${{ secrets.OMV_USER }}
+          password: ${{ secrets.OMV_PASSWORD }}
+          script: |
+            echo "Successfully connected via Tailscale!"
+            docker pull scaferuzzz/disaster-backend:latest
+            docker stop disaster-backend || true
+            docker rm disaster-backend || true
+            docker run -d --name disaster-backend -p 8080:8080 scaferuzzz/disaster-backend:latest
+            docker image prune -f
