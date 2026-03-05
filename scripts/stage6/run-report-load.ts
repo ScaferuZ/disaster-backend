@@ -40,11 +40,7 @@ function sleep(ms: number) {
 function buildReport() {
   return {
     lik_codes: ["wn-1", "wn-2", "wn-3", "wn-4"],
-    level_of_interaction_with_disaster: 5,
-    age: 35,
-    usage_duration: 10,
-    min_frequency_of_usage: 10,
-    fishing_experience: 5,
+    beach_location: "pantai_lampuuk",
     clientReportId: crypto.randomUUID(),
     createdAtClient: Date.now(),
   };

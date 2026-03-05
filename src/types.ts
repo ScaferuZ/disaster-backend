@@ -1,10 +1,16 @@
+export const ALLOWED_BEACH_LOCATIONS = [
+	"pantai_lampuuk",
+	"pantai_lhoknga",
+	"pantai_ulee_lheue",
+	"pantai_depok",
+	"pantai_samas",
+] as const;
+
+export type BeachLocation = (typeof ALLOWED_BEACH_LOCATIONS)[number];
+
 export type PredictionInput = {
 	lik_codes: string[];
-	level_of_interaction_with_disaster: number;
-	age: number;
-	usage_duration: number;
-	min_frequency_of_usage: number;
-	fishing_experience: number;
+	beach_location: BeachLocation;
 	clientReportId?: string;
 	createdAtClient?: number;
 };

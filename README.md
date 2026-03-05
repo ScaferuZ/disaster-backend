@@ -162,11 +162,7 @@ curl -X POST http://localhost:3000/api/report \
   -H "content-type: application/json" \
   -d '{
     "lik_codes": ["wn-1", "wn-2", "wn-3", "wn-4"],
-    "level_of_interaction_with_disaster": 5.0,
-    "age": 35.0,
-    "usage_duration": 10.0,
-    "min_frequency_of_usage": 10.0,
-    "fishing_experience": 5.0,
+    "beach_location": "pantai_lampuuk",
     "clientReportId": "11111111-1111-4111-8111-111111111111",
     "createdAtClient": 1739270400000
   }'

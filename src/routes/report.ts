@@ -7,6 +7,7 @@ import {
 	REPORT_DEDUPE_PREFIX,
 	REPORT_SYNC_STREAM,
 } from "../config";
+import { ALLOWED_BEACH_LOCATIONS } from "../types";
 import type { MlResult, PredictionInput } from "../types";
 
 const route = new Hono();
@@ -43,6 +44,20 @@ route.post("/report", async (c) => {
 
 	if (!Array.isArray(input.lik_codes) || input.lik_codes.length === 0) {
 		return c.json({ ok: false, error: "lik_codes required" }, 400);
+	}
+
+	if (typeof input.beach_location !== "string" || input.beach_location.trim().length === 0) {
+		return c.json({ ok: false, error: "beach_location required" }, 400);
+	}
+	const beachLocation = input.beach_location.trim().toLowerCase();
+	if (!ALLOWED_BEACH_LOCATIONS.includes(beachLocation as (typeof ALLOWED_BEACH_LOCATIONS)[number])) {
+		return c.json(
+			{
+				ok: false,
+				error: `beach_location must be one of: ${ALLOWED_BEACH_LOCATIONS.join(", ")}`,
+			},
+			400,
+		);
 	}
 
 	if (input.clientReportId !== undefined) {
@@ -116,11 +131,15 @@ route.post("/report", async (c) => {
 	try {
 		const serverTimestamp = Date.now();
 		const reportId = crypto.randomUUID();
+		const mlPayload = {
+			lik_codes: input.lik_codes,
+			beach_location: beachLocation,
+		};
 
 		const mlRes = await fetch(`${ML_BASE_URL}/predict`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify(input),
+			body: JSON.stringify(mlPayload),
 		});
 
 		if (!mlRes.ok) {
@@ -161,7 +180,7 @@ route.post("/report", async (c) => {
 				is_multisign: isMultisign,
 				shouldDistribute,
 			},
-			input: { lik_codes: input.lik_codes },
+			input: mlPayload,
 			ml: result,
 		};
 

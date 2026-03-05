@@ -10,6 +10,7 @@ import {
 	PUSH_SUBSCRIPTIONS_HASH,
 	REPORT_SYNC_STREAM,
 } from "../config";
+import { ALLOWED_BEACH_LOCATIONS } from "../types";
 
 const route = new Hono();
 
@@ -277,21 +278,10 @@ const openApiDoc = {
 		schemas: {
 			PredictionInput: {
 				type: "object",
-				required: [
-					"lik_codes",
-					"level_of_interaction_with_disaster",
-					"age",
-					"usage_duration",
-					"min_frequency_of_usage",
-					"fishing_experience",
-				],
+				required: ["lik_codes", "beach_location"],
 				properties: {
 					lik_codes: { type: "array", items: { type: "string" } },
-					level_of_interaction_with_disaster: { type: "number" },
-					age: { type: "number" },
-					usage_duration: { type: "number" },
-					min_frequency_of_usage: { type: "number" },
-					fishing_experience: { type: "number" },
+					beach_location: { type: "string", enum: ALLOWED_BEACH_LOCATIONS },
 					clientReportId: { type: "string", format: "uuid", nullable: true },
 					createdAtClient: { type: "number", nullable: true },
 				},

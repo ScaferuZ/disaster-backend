@@ -400,11 +400,7 @@ function buildReportFromForm() {
 
   return {
     lik_codes,
-    level_of_interaction_with_disaster: Number(document.getElementById("level_of_interaction_with_disaster").value),
-    age: Number(document.getElementById("age").value),
-    usage_duration: Number(document.getElementById("usage_duration").value),
-    min_frequency_of_usage: Number(document.getElementById("min_frequency_of_usage").value),
-    fishing_experience: Number(document.getElementById("fishing_experience").value),
+    beach_location: document.getElementById("beach_location").value.trim().toLowerCase(),
     clientReportId: crypto.randomUUID(),
     createdAtClient: Date.now(),
   };
@@ -416,6 +412,10 @@ async function handleSubmit(event) {
 
   if (!Array.isArray(report.lik_codes) || report.lik_codes.length === 0) {
     log("submit blocked: lik_codes is empty");
+    return;
+  }
+  if (!report.beach_location) {
+    log("submit blocked: beach_location is empty");
     return;
   }
 
