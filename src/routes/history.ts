@@ -8,6 +8,14 @@ const MAX_LIMIT = 100;
 const PAGE_SIZE = 100;
 const MAX_SCAN_PAGES = 10;
 
+function parseBooleanQuery(raw: string | undefined) {
+	if (raw === undefined) return undefined;
+	const normalized = raw.trim().toLowerCase();
+	if (["1", "true", "yes", "on"].includes(normalized)) return true;
+	if (["0", "false", "no", "off"].includes(normalized)) return false;
+	return null;
+}
+
 function parseLimit(raw: string | undefined) {
 	if (!raw) return DEFAULT_LIMIT;
 	const parsed = Number(raw);
@@ -16,12 +24,13 @@ function parseLimit(raw: string | undefined) {
 }
 
 function parseMine(raw: string | undefined) {
-	if (!raw) return true;
-	const normalized = raw.trim().toLowerCase();
-	if (normalized === "0" || normalized === "false" || normalized === "no" || normalized === "off") {
-		return false;
-	}
-	return true;
+	const parsed = parseBooleanQuery(raw);
+	if (parsed === undefined || parsed === null) return true;
+	return parsed;
+}
+
+function parseDistributed(raw: string | undefined) {
+	return parseBooleanQuery(raw);
 }
 
 route.get("/history", async (c) => {
@@ -29,9 +38,14 @@ route.get("/history", async (c) => {
 	const currentUserId = typeof jwtPayload?.sub === "string" ? jwtPayload.sub : null;
 	const mine = parseMine(c.req.query("mine"));
 	const limit = parseLimit(c.req.query("limit"));
+	const distributed = parseDistributed(c.req.query("distributed"));
 
 	if (limit === null) {
 		return c.json({ ok: false, error: "limit must be a positive integer" }, 400);
+	}
+
+	if (distributed === null) {
+		return c.json({ ok: false, error: "distributed must be a boolean" }, 400);
 	}
 
 	const items: Array<Record<string, unknown>> = [];
@@ -60,13 +74,23 @@ route.get("/history", async (c) => {
 				alertEvent.client && typeof alertEvent.client === "object"
 					? (alertEvent.client as Record<string, unknown>)
 					: null;
+			const eventDecision =
+				alertEvent.decision && typeof alertEvent.decision === "object"
+					? (alertEvent.decision as Record<string, unknown>)
+					: null;
 			const eventUserId = typeof eventClient?.userId === "string" ? eventClient.userId : null;
+			const eventShouldDistribute =
+				typeof eventDecision?.shouldDistribute === "boolean"
+					? eventDecision.shouldDistribute
+					: null;
 
 			if (mine && currentUserId && eventUserId !== currentUserId) continue;
+			if (distributed !== undefined && eventShouldDistribute !== distributed) continue;
 
 			items.push({
 				streamId: row.id,
 				...alertEvent,
+				shouldDistribute: eventShouldDistribute,
 			});
 
 			if (items.length >= limit) break;
@@ -83,6 +107,7 @@ route.get("/history", async (c) => {
 		count: items.length,
 		filter: {
 			mine,
+			distributed,
 			userId: mine ? currentUserId : null,
 		},
 	});

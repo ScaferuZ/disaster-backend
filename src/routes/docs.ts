@@ -85,6 +85,13 @@ const openApiDoc = {
 						schema: { type: "boolean", default: true },
 						description: "When true, return only laporan submitted by authenticated user",
 					},
+					{
+						in: "query",
+						name: "distributed",
+						required: false,
+						schema: { type: "boolean" },
+						description: "Filter by backend distribution decision (`decision.shouldDistribute`)",
+					},
 				],
 				responses: {
 					"200": { description: "History rows from alerts stream" },

@@ -186,6 +186,14 @@ curl "http://localhost:3000/api/history?limit=20&mine=true" \
   -H "authorization: Bearer ${TOKEN}"
 ```
 
+Only distributed alerts:
+
+```bash
+TOKEN="<jwt-from-login>"
+curl "http://localhost:3000/api/history?limit=20&mine=true&distributed=true" \
+  -H "authorization: Bearer ${TOKEN}"
+```
+
 ## Example: Register and Login
 
 ```bash
