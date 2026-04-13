@@ -11,7 +11,10 @@
     "stage6:load": "bun run scripts/stage6/run-report-load.ts",
     "stage6:export": "bun run scripts/stage6/export-streams.ts",
     "stage6:analyze": "bun run scripts/stage6/analyze.ts",
-    "stage6:sample:resources": "bun run scripts/stage6/sample-resources.ts"
+    "stage6:sample:resources": "bun run scripts/stage6/sample-resources.ts",
+    "analyze:comparison": "bun run scripts/analyze-comparison.ts",
+    "compare:run": "bun run scripts/run-comparison.ts",
+    "analyze:whatsapp": "bun run scripts/analyze-whatsapp-webhooks.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

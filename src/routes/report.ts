@@ -186,6 +186,24 @@ route.post("/report", async (c) => {
 
 		const alertJson = JSON.stringify(alertEvent);
 
+		// Log experiment trigger if applicable
+		if (input._experimentId && typeof input._experimentId === "string") {
+			const isN8NWhatsApp =
+				input.lik_codes &&
+				input.beach_location &&
+				!input._channel;
+			const channel = isN8NWhatsApp ? "WHATSAPP" : (input._channel ?? "PWA");
+			const source = isN8NWhatsApp ? "n8n_workflow" : undefined;
+
+			await redis.xAdd("experiments:triggers", "*", {
+				experimentId: input._experimentId,
+				channel,
+				triggeredAt: String(Date.now()),
+				alertId: alertEvent.alertId,
+				...(source ? { source } : {}),
+			});
+		}
+
 		await redis.xAdd(ALERTS_STREAM, "*", { json: alertJson });
 
 		if (shouldDistribute) {

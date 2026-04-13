@@ -13,6 +13,8 @@ export type PredictionInput = {
 	beach_location: BeachLocation;
 	clientReportId?: string;
 	createdAtClient?: number;
+	_experimentId?: string;
+	_channel?: string;
 };
 
 export type MlResult = {

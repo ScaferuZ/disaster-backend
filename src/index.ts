@@ -21,6 +21,7 @@ import historyRoute from "./routes/history";
 import webRoute from "./routes/web";
 import docsRoute from "./routes/docs";
 import authRoute from "./routes/auth";
+import wahaWebhookRoute from "./routes/waha-webhook";
 import { apiJwtAuth } from "./middleware/jwtAuth";
 
 const app = new Hono();
@@ -89,6 +90,7 @@ app.route("/api", reportRoute);
 app.route("/api", historyRoute);
 app.route("/api", docsRoute);
 app.route("/api", authRoute);
+app.route("/api/waha", wahaWebhookRoute);
 app.route("/", webRoute);
 
 export default {
