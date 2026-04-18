@@ -222,7 +222,7 @@ async function main() {
     console.log(`${colors.dim}3. Send to your test group${colors.reset}\n`);
 
     // Countdown
-    await countdown(3);
+    await countdown(10);
 
     // Trigger PWA
     console.log(`${colors.cyan}Calling POST /api/report...${colors.reset}\n`);

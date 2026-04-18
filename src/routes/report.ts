@@ -187,21 +187,24 @@ route.post("/report", async (c) => {
 
 		const alertJson = JSON.stringify(alertEvent);
 
-		// Log experiment trigger if applicable
-		if (input._experimentId && typeof input._experimentId === "string") {
-			const isN8NWhatsApp =
-				input.lik_codes &&
-				input.beach_location &&
-				!input._channel;
-			const channel = isN8NWhatsApp ? "WHATSAPP" : (input._channel ?? "PWA");
-			const source = isN8NWhatsApp ? "n8n_workflow" : undefined;
+		// Detect channel and log to experiments:triggers
+		const isWA = input._channel === "WA" || (!input._channel && !!input.lik_codes && !!input.beach_location);
+		const channel = isWA ? "WHATSAPP" : (input._channel ?? "PWA");
 
+		if (input._experimentId && typeof input._experimentId === "string") {
 			await redis.xAdd("experiments:triggers", "*", {
 				experimentId: input._experimentId,
 				channel,
 				triggeredAt: String(Date.now()),
 				alertId: alertEvent.alertId,
-				...(source ? { source } : {}),
+			});
+		} else if (isWA) {
+			// Always log WA requests even without an experiment ID
+			await redis.xAdd("experiments:triggers", "*", {
+				experimentId: "untagged",
+				channel,
+				triggeredAt: String(Date.now()),
+				alertId: alertEvent.alertId,
 			});
 		}
 
