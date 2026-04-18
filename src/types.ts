@@ -18,7 +18,7 @@ export type PredictionInput = {
 };
 
 export type MlResult = {
-	is_high_risk: boolean;
+	community_risk_behaviour: "Safe" | "Unsafe";
 	description: string;
 	detected_signs: Array<{ code: string; desc: string }>;
 };

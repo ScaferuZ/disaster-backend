@@ -162,7 +162,8 @@ route.post("/report", async (c) => {
 		const result = (await mlRes.json()) as MlResult;
 
 		const isMultisign = input.lik_codes.length > 3;
-		const shouldDistribute = result.is_high_risk || isMultisign;
+		const isHighRisk = result.community_risk_behaviour === "Unsafe";
+		const shouldDistribute = isHighRisk || isMultisign;
 
 		const alertEvent = {
 			eventType: "DISASTER_ALERT",
@@ -176,7 +177,7 @@ route.post("/report", async (c) => {
 				email: reporterEmail,
 			},
 			decision: {
-				is_high_risk: result.is_high_risk,
+				community_risk_behaviour: result.community_risk_behaviour,
 				is_multisign: isMultisign,
 				shouldDistribute,
 			},
