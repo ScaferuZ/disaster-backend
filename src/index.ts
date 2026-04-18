@@ -90,7 +90,7 @@ app.route("/api", reportRoute);
 app.route("/api", historyRoute);
 app.route("/api", docsRoute);
 app.route("/api", authRoute);
-app.route("/api/waha", wahaWebhookRoute);
+app.route("/api", wahaWebhookRoute);
 app.route("/", webRoute);
 
 export default {
