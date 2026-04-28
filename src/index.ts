@@ -22,11 +22,9 @@ import webRoute from "./routes/web";
 import docsRoute from "./routes/docs";
 import authRoute from "./routes/auth";
 import wahaWebhookRoute from "./routes/waha-webhook";
-import { apiJwtAuth } from "./middleware/jwtAuth";
 
 const app = new Hono();
 app.use("/api/*", cors());
-app.use("/api/*", apiJwtAuth);
 app.onError((err, c) => {
 	console.error("[unhandled-error]", {
 		path: c.req.path,
