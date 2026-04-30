@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             cd /opt/disaster-backend
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker compose ps
+            docker compose --profile ml pull
+            docker compose --profile ml up -d --remove-orphans
+            docker compose --profile ml ps
             docker image prune -f
