@@ -40,40 +40,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-
-      - name: Deploy to OMV via Tailscale
+      - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.OMV_TS_IP }} 
-          username: ${{ secrets.OMV_USER }}
-          password: ${{ secrets.OMV_PASSWORD }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            echo "Successfully connected via Tailscale!"
-            APP_DIR=/srv/dev-disk-by-uuid-48285f96-d7b9-493d-9c36-6747aaba3c4c/compose/thesis-services
-            BASE_FILE="$APP_DIR/thesis-services.yml"
-            OVERRIDE_FILE="$APP_DIR/compose.override.yml"
-
-            if [ ! -f "$BASE_FILE" ]; then
-              echo "Compose file not found: $BASE_FILE"
-              ls -la "$APP_DIR"
-              exit 1
-            fi
-
-            if [ -f "$OVERRIDE_FILE" ]; then
-              echo "Using compose files: $BASE_FILE + $OVERRIDE_FILE"
-              docker compose -f "$BASE_FILE" -f "$OVERRIDE_FILE" pull
-              docker compose -f "$BASE_FILE" -f "$OVERRIDE_FILE" up -d --remove-orphans
-              docker compose -f "$BASE_FILE" -f "$OVERRIDE_FILE" ps
-            else
-              echo "Using compose file: $BASE_FILE"
-              docker compose -f "$BASE_FILE" pull
-              docker compose -f "$BASE_FILE" up -d --remove-orphans
-              docker compose -f "$BASE_FILE" ps
-            fi
+            cd /opt/disaster-backend
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker compose ps
             docker image prune -f
