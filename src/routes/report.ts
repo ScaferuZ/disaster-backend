@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
+import { sendWAAlert } from "../lib/waha";
 import {
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
@@ -163,7 +164,7 @@ route.post("/report", async (c) => {
 
 		const isMultisign = input.lik_codes.length > 3;
 		const isHighRisk = result.community_risk_behaviour === "Unsafe";
-		const shouldDistribute = isHighRisk || isMultisign;
+		const shouldDistribute = true;
 
 		const alertEvent = {
 			eventType: "DISASTER_ALERT",
@@ -210,8 +211,13 @@ route.post("/report", async (c) => {
 
 		await redis.xAdd(ALERTS_STREAM, "*", { json: alertJson });
 
-		if (shouldDistribute) {
-			await redis.publish(ALERTS_CHANNEL, alertJson);
+		await redis.publish(ALERTS_CHANNEL, alertJson);
+
+		if (channel !== "WHATSAPP") {
+			const firstSign = result.detected_signs[0]?.desc ?? result.description;
+			await sendWAAlert(
+				`⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n${firstSign}\n\nLokasi Laporan:\n${beachLocation}\n\nMohon berhati-hati saat melaut.`,
+			);
 		}
 
 		const responsePayload: ReportResponse = {

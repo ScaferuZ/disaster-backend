@@ -58,6 +58,11 @@ export const AUTH_USER_IDENTITY_KEY_PREFIX =
 export const WAHA_API_KEY = process.env.WAHA_API_KEY ?? "";
 export const WAHA_TEST_GROUP_ID = process.env.WAHA_TEST_GROUP_ID ?? "120363406629965480@g.us";
 export const WAHA_API_URL = process.env.WAHA_API_URL ?? "https://waha.fruz.cloud/api";
+export const WAHA_SESSION = process.env.WAHA_SESSION ?? "default";
+export const WAHA_BROADCAST_GROUPS = parseCsvEnv(
+	process.env.WAHA_BROADCAST_GROUPS,
+	["120363406629965480@g.us", "120363425830719164@g.us"],
+);
 
 if (JWT_AUTH_ENABLED && !JWT_SECRET) {
 	throw new Error("JWT_AUTH_ENABLED=true requires JWT_SECRET to be set");
