@@ -189,7 +189,7 @@ route.post("/report", async (c) => {
 		const alertJson = JSON.stringify(alertEvent);
 
 		// Detect channel and log to experiments:triggers
-		const isWA = input._channel === "WA" || (!input._channel && !!input.lik_codes && !!input.beach_location);
+		const isWA = input._channel === "WA";
 		const channel = isWA ? "WHATSAPP" : (input._channel ?? "PWA");
 
 		if (input._experimentId && typeof input._experimentId === "string") {
