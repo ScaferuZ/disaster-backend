@@ -33,6 +33,7 @@ services:
       WAHA_TEST_GROUP: ${WAHA_TEST_GROUP:-}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.app.rule=Host(`api.samudraapp.com`)"
       - "traefik.http.routers.app.entrypoints=websecure"
       - "traefik.http.routers.app.tls.certresolver=letsencrypt"
