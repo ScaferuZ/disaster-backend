@@ -211,7 +211,9 @@ route.post("/report", async (c) => {
 
 		await redis.xAdd(ALERTS_STREAM, "*", { json: alertJson });
 
+		console.log("[report] publishing to Redis channel", ALERTS_CHANNEL, "channel:", channel, "alertId:", alertEvent.alertId);
 		await redis.publish(ALERTS_CHANNEL, alertJson);
+		console.log("[report] published OK");
 
 		if (channel !== "WHATSAPP") {
 			const firstSign = result.detected_signs[0]?.desc ?? result.description;

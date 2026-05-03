@@ -47,6 +47,7 @@ await initRedis();
 initWebPush();
 
 await sub.subscribe(ALERTS_CHANNEL, async (message) => {
+	console.log("[sub] received alert from Redis, SSE clients:", sseClients.size, "WS clients:", wsClients.size);
 	if (ENABLE_SSE_DELIVERY) {
 		for (const client of sseClients) {
 			try {
@@ -72,10 +73,9 @@ await sub.subscribe(ALERTS_CHANNEL, async (message) => {
 	}
 
 	if (ENABLE_PUSH_DELIVERY) {
+		console.log("[push] attempting push delivery");
 		const pushResult = await sendPushAlertToAll(message);
-		if (pushResult.failed > 0 || pushResult.removed > 0) {
-			console.info("[push]", pushResult);
-		}
+		console.log("[push] result:", pushResult);
 	}
 });
 
