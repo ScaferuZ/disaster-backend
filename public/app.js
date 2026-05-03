@@ -381,9 +381,13 @@ async function flushQueue(source) {
 
   for (const report of queued) {
     try {
-      await sendReport(report);
+      const result = await sendReport(report);
       await removeQueuedReport(report.clientReportId);
-      log(`synced report ${report.clientReportId}`);
+      if (result.status === "queued") {
+        log(`synced (queued, waiting for threshold) ${report.clientReportId}`);
+      } else {
+        log(`synced + alert triggered ${report.clientReportId}`);
+      }
     } catch (err) {
       log(`sync halted for ${report.clientReportId}: ${String(err)}`);
       break;
@@ -429,8 +433,12 @@ async function handleSubmit(event) {
   }
 
   try {
-    await sendReport(report);
-    log(`sent report ${report.clientReportId}`);
+    const result = await sendReport(report);
+    if (result.status === "queued") {
+      log(`report received (queued, waiting for threshold) ${report.clientReportId}`);
+    } else {
+      log(`alert triggered! ${report.clientReportId}`);
+    }
   } catch (err) {
     log(`online send failed; queued ${report.clientReportId}: ${String(err)}`);
     await queueReport(report);
