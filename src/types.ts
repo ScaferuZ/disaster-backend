@@ -14,13 +14,16 @@ export type PredictionInput = {
 	clientReportId?: string;
 	createdAtClient?: number;
 	_experimentId?: string;
+	is_active_warning?: boolean;
+	active_warning?: string[];
 	_channel?: string;
 };
 
 export type MlResult = {
-	community_risk_behaviour: "Safe" | "Unsafe";
-	description: string;
-	detected_signs: Array<{ code: string; desc: string }>;
+	active_warning: string[];
+	sign_description: string;
+	community_characteristics: string;
+	action_recommendation: string;
 };
 
 export type AckInput = {

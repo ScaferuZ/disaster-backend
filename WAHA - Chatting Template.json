@@ -1,0 +1,1542 @@
+{
+  "name": "WAHA - Chatting Template",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc17837c-b42f-4776-83c8-83dcf8304a1a",
+              "leftValue": "={{ $json.payload.fromMe}}",
+              "rightValue": "={{ false }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "57c1da99-38f9-473a-9a25-6f6b2b0e0923",
+              "leftValue": "={{ $json.payload.body }}",
+              "rightValue": "!lapor",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        112
+      ],
+      "id": "a43ef5e7-7c9a-4908-9801-f56ca869ca36",
+      "name": "check-message-and-user",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-4-31b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-4-31b-it"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert weather and marine sign classifier for Indonesian coastal waters. Your job is to analyze a fisherman's observation and determine:\n\nThe correct Local Knowledge Code(s).\n\nThe likely location context of the fisherman.\n\nThe fisherman may write casually in Indonesian or English.\n\nTASKS\n\nYou must extract TWO things:\n\nlik_codes → Local Knowledge Codes describing the observed marine/weather signs.\n\nlocation_context → Where the fisherman is likely located.\n\nPossible values for location_context:\n\n\"shore\" → fisherman indicates being on land, beach, coast, harbor, or near shore\n\n\"offshore\" → fisherman indicates being at sea, on a boat, fishing offshore\n\n\"unknown\" → location is not clearly mentioned\n\nREFERENCE DATA\n\nMap the input based on these categories and descriptions.\n\n1. TSUNAMI (Ts)\n\nTs-1: Calm sea (no tide) followed by sudden recession.\n\nTs-2: Roaring/rumbling sound accompanied by an earthquake.\n\nTs-3: Sudden extreme recession of sea level.\n\nTs-4: Sudden very large waves during clear weather.\n\nTs-5: Eerie, heavy silence (no birds/animal sounds, no wind).\n\nTs-6: Domestic animals appearing restless or distressed.\n\n2. STRONG WINDS & STORMS (Wn)\n\nWn-1: Clouds descending in clusters.\n\nWn-2: Clouds merging/approaching in groups.\n\nWn-3: Lightning on one side or back-and-forth.\n\nWn-4: Waves changing from small/frequent to large/close.\n\nWn-5: Dolphins approaching or guiding the boat.\n\nWn-6: Seagulls flying hastily and calling loudly.\n\nWn-7: Transition period from west to east monsoon.\n\nWn-8: Overcast sky but not very dark.\n\nWn-9: Rain or thick clouds during East Monsoon.\n\nWn-10: Clear weather without clouds during West Monsoon.\n\nWn-11: Thunderous booms heard 1–7 times.\n\nWn-12: Many stars twinkling at night during West Monsoon.\n\nWn-13: No stars visible at night during East Monsoon.\n\nWn-14: Stars aligning with the moon or moon halo.\n\nWn-15: Cockroaches flying inside the boat.\n\nWn-16: Moon relative to Scorpio or Pleiades.\n\nWn-17: Whale surfaces and flicks its tail.\n\n3. EXTREME WAVES (Wv)\n\nWv-1: Clear weather during West Monsoon.\n\nWv-2: Rain and many clouds during East Monsoon.\n\n4. HEAVY RAINFALL (Wth)\n\nWth-1: Dark thick overcast sky (\"mendem\").\n\n5. STRONG CURRENTS (Cr)\n\nCr-1: Sea surface with drifting trash or wood.\n\nCr-2: Seawater becomes murky or turbid.\n\nCr-3: Sea surface rippling like poured water.\n\nCr-4: Pleiades star cluster not visible.\n\n6. HIGH TIDES (Td)\n\nTd-1: Full Moon.\n\nTd-2: 21st–30th days of the Hijri Month.\n\nLOCATION CONTEXT DETECTION\n\nInfer location based on phrases in the message.\n\nExamples indicating shore:\n\ndi pantai\n\ndi pesisir\n\ndi darat\n\ndari pantai\n\nlagi di pantai\n\ndekat pantai\n\nExamples indicating offshore:\n\ndi laut\n\nlagi melaut\n\ndi kapal\n\ndi perahu\n\nlagi mancing di laut\n\ndi tengah laut\n\nIf location cannot be determined confidently, return \"unknown\".\n\nRULES\n\nAnalyze the user's text.\n\nIdentify all matching Local Knowledge Codes.\n\nMultiple codes are allowed.\n\nIf no code matches, return \"unknown\" inside the list.\n\nInfer the location context if possible.\n\nOutput ONLY valid JSON.\n\nDo not include explanations.\n\nOUTPUT FORMAT\n\nReturn exactly this structure:\n\n{\n  \"lik_codes\": [\"Wn-6\"],\n  \"location_context\": \"shore\"\n}\n\nIf nothing matches:\n\n{\n  \"lik_codes\": [\"unknown\"],\n  \"location_context\": \"unknown\"\n}\n\nINPUT TEXT\n\n{{ $json.payload.body }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "candidateCount": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        112
+      ],
+      "id": "46bfcc3e-3633-44cf-bfa4-409bfc8921f4",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "d0deRLrj7A4l4yID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "36702982-342f-43b5-b9f5-ee43ffa40389",
+              "leftValue": "={{$json.lik_codes[0] === \"unknown\"}}",
+              "rightValue": "=unknown",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        112
+      ],
+      "id": "a4935520-60ba-4924-9a62-838234535896",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": " const parts = $('Message a model').first().json.content.parts;\n\n  // Find the part that is NOT a thought (the actual response)\n  const responsePart = parts.find(p => !p.thought);\n  const rawText = responsePart.text.replace(/```json|```/g, \"\").trim();\n\n  let result;\n  try {\n    result = JSON.parse(rawText);\n  } catch (e) {\n    result = {\n      lik_codes: [\"unknown\"],\n      location_context: \"unknown\"\n    };\n  }\n\n  const chatId = $('check-message-and-user').first().json.payload.from;\n\n  const beachMap = ({\n    \"120363406629965480@g.us\": \"pantai_lampuuk\",\n    \"120363425830719164@g.us\": \"pantai_lhoknga\"\n  });\n\n  return {\n    lik_codes: result.lik_codes || [\"unknown\"],\n    location_context: result.location_context || \"unknown\",\n    beach_location: beachMap[chatId] || \"unknown_beach\"\n  };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "42260ef6-0b0c-4a2f-8f2d-8193d5feaeb7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.fruz.cloud/api/report",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "lik_codes",
+              "value": "={{ $json.lik_codes }}"
+            },
+            {
+              "name": "beach_location",
+              "value": "={{ $json.beach_location }}"
+            },
+            {
+              "name": "_channel",
+              "value": "WA"
+            },
+            {
+              "name": "=_experimentId",
+              "value": "=={{ $('check-message-and-user').first().json.payload.body.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1888,
+        112
+      ],
+      "id": "0d8fe124-48f0-4efc-b295-149ff3fe0f2f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "id": "c39e16b7-ff3a-47bc-9cc6-bfd77cbfadcf",
+      "name": "WAHA Trigger",
+      "type": "@devlikeapro/n8n-nodes-waha.wahaTrigger",
+      "typeVersion": 202409,
+      "position": [
+        -32,
+        16
+      ],
+      "webhookId": "71251449-2644-4325-8ba7-2a1550a81fb4"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "id": "a0b83907-d0d8-4186-87a6-b6a66ff02de5",
+      "name": "Send Seen",
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202409,
+      "position": [
+        416,
+        -80
+      ],
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Always Send Seen",
+        "height": 227.5411734823075,
+        "width": 568.1572184210546,
+        "color": 4
+      },
+      "id": "18abb38c-e36f-497a-9e30-8ac45f163d39",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "true",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "42c4cf03-d913-4024-9b99-c1476f2f5c26"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "242f1ea8-0d3f-491c-a60b-1ac78c82488f",
+                    "leftValue": "true",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "4f550e8f-c7d2-4c22-8fbb-f729816db6b7",
+                    "leftValue": "={{ $json.payload.location }}",
+                    "rightValue": "1",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "id": "11664cd8-5f40-46e9-859e-dc88acc826f8",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        272
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "chatId": "={{ $json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2336,
+        112
+      ],
+      "id": "58332a31-db3e-4a2d-ab1a-c9eec40cd370",
+      "name": "Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=5"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        112
+      ],
+      "id": "798070c5-8b95-442a-81f7-3f3617d249cb",
+      "name": "Wait1",
+      "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Code in JavaScript1').item.json.session }}",
+        "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2784,
+        112
+      ],
+      "id": "34b5e8ef-b84d-4eae-8d2e-56330f279c38",
+      "name": "Stop Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').item.json.payload.to }}",
+        "text": "belum euy, tolong inputkan lagi ceunah",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1440,
+        16
+      ],
+      "id": "4cd3a18b-dc12-493b-b5f9-1c99aef99201",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Code in JavaScript1').item.json.session }}",
+        "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
+        "reply_to": "={{ $('Code in JavaScript1').item.json.chatId }}",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        3008,
+        112
+      ],
+      "id": "b332e180-555b-45f4-a887-db76330adc14",
+      "name": "Send a text message1",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = $('Code in JavaScript8').first().json.locationText || \"Lokasi tidak diketahui\";\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        112
+      ],
+      "id": "3760f83d-348b-48f6-949e-4f1f495569cd",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "78cf6762-f8db-451d-9b54-ae485d36dc1e",
+              "leftValue": "={{$json.location_context !== \"shore\"}}",
+              "rightValue": "=shore",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        208
+      ],
+      "id": "827a8696-86f4-425d-a4f3-a8f5306b90a1",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2144,
+        304
+      ],
+      "id": "76f2e67e-05b5-4e63-93c9-50e2ee0a7db9",
+      "name": "Start Typing1",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=5"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2336,
+        304
+      ],
+      "id": "a51e4d13-7e5b-4a7e-978f-6af175db9f26",
+      "name": "Wait",
+      "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2560,
+        304
+      ],
+      "id": "d18214bf-f816-4faf-8664-1846e08cab6e",
+      "name": "Stop Typing1",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "=",
+        "text": "=📍 Lokasi belum diketahui.\n\nJika Anda berada di laut, mohon kirim lokasi Anda menggunakan fitur \"Share Location\" dalam 5 menit.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2784,
+        304
+      ],
+      "id": "97938186-206d-46f6-ae1b-be60e114ba47",
+      "name": "Send a text message2",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('check-message-and-user').first().json;\n\nconst reporterId = trigger.payload.participant \n\nreturn [\n  {\n    json: {\n      reporterId,\n      sourceGroup: trigger.payload.from,\n      session: trigger.session,\n      lik_codes:  $input.first().json.lik_codes.join(\",\"),\n      originalText: trigger.payload.body,\n      status: 'waiting_location',\n      createdAt: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        304
+      ],
+      "id": "3ea32158-7477-4bae-a2d1-7a8c208930bb",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "eXPp33vISFsumV9O",
+          "mode": "list",
+          "cachedResultName": "nelayan_report",
+          "cachedResultUrl": "/projects/r1cvwWNEjvWrgHwd/datatables/eXPp33vISFsumV9O"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "reporterId",
+              "displayName": "reporterId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sourceGroup",
+              "displayName": "sourceGroup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "session",
+              "displayName": "session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lik_codes",
+              "displayName": "lik_codes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "originalText",
+              "displayName": "originalText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        304
+      ],
+      "id": "e7f50a28-6204-4cec-a3e6-6e88a6571979",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.payload;\n\nconst reporterId = payload.participant;\nconst sourceGroup = payload.from;\nconst session = $input.first().json.session;\n\nconst latitude =\n  payload.location?.latitude ??\n  payload._data?.message?.locationMessage?.degreesLatitude ??\n  null;\n\nconst longitude =\n  payload.location?.longitude ??\n  payload._data?.message?.locationMessage?.degreesLongitude ??\n  null;\n\nreturn [\n  {\n    json: {\n      reporterId,\n      sourceGroup,\n      session,\n      latitude: latitude !== null ? Number(latitude) : null,\n      longitude: longitude !== null ? Number(longitude) : null\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        592
+      ],
+      "id": "de97e365-636b-49f5-af7b-79ecbba1f98b",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "eXPp33vISFsumV9O",
+          "mode": "list",
+          "cachedResultName": "nelayan_report",
+          "cachedResultUrl": "/projects/r1cvwWNEjvWrgHwd/datatables/eXPp33vISFsumV9O"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reporterId",
+              "keyValue": "={{ $json.reporterId }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        704,
+        592
+      ],
+      "id": "0f69713b-1e6b-42e1-b6cc-af8d582162de",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6035427c-3281-48a1-b558-08b60b3701ac",
+              "leftValue": "={{ $json.reporterId !== undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        496
+      ],
+      "id": "8cc4a0ce-4653-444f-8c41-930346e84ff2",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const latitude = $('Code in JavaScript3').first().json.latitude;\nconst longitude = $('Code in JavaScript3').first().json.longitude;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nlet locationText;\n\nif (latitude && longitude) {\n  locationText = `${latitude}, ${longitude}`;\n} else {\n  locationText = beachMap[$input.first().json.sourceGroup] || \"unknown_beach\";\n}\n\nreturn [\n  {\n    json: {\n      reporterId: $input.first().json.reporterId,\n      sourceGroup: $input.first().json.sourceGroup,\n      session: $input.first().json.session,\n      lik_codes: [$input.first().json.lik_codes],\n      latitude,\n      longitude,\n      originalText: $input.first().json.originalText,\n      beach_location: beachMap[$input.first().json.sourceGroup] || \"unknown_beach\",\n      locationText\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        496
+      ],
+      "id": "e57b1a57-7a57-4aeb-a817-20bf6f1f8b70",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "eXPp33vISFsumV9O",
+          "mode": "list",
+          "cachedResultName": "nelayan_report",
+          "cachedResultUrl": "/projects/r1cvwWNEjvWrgHwd/datatables/eXPp33vISFsumV9O"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reporterId",
+              "keyValue": "={{ $('Switch').item.json.payload.participant }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "waiting_location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        480
+      ],
+      "id": "6f4ca4d3-1254-40ae-9e36-525620d30a15",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\n\nconst createdAt = new Date(row.createdAt).getTime();\nconst now = Date.now();\nconst ageMs = now - createdAt;\n\nconst isExpired = ageMs > 5 * 60 * 1000;\n\nreturn [\n  {\n    json: {\n      ...row,\n      isExpired\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        592
+      ],
+      "id": "85cfa8a7-f883-46ca-9970-a55d2f2f6546",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5652e892-1422-4bcd-b157-719e931fd040",
+              "leftValue": "={{$json.isExpired === true}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        592
+      ],
+      "id": "b52a673f-e48f-4d1b-8185-dfc4a7f9b20f",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('Switch').item.json.session }}",
+        "chatId": "={{ $('Switch').item.json.payload.from }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1440,
+        688
+      ],
+      "id": "b35e2f5f-1763-4a78-9553-6b2dac3ab595",
+      "name": "Start Typing2",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=5"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        688
+      ],
+      "id": "2f64eed8-487a-4fd7-a2d9-ae27fcbc0e77",
+      "name": "Wait2",
+      "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Switch').item.json.session }}",
+        "chatId": "={{ $('Switch').item.json.payload.from }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1888,
+        688
+      ],
+      "id": "6e45606b-2ca6-4db4-b687-1fa76ff94425",
+      "name": "Stop Typing2",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Switch').item.json.session }}",
+        "chatId": "={{ $('Switch').item.json.payload.from }}",
+        "reply_to": "={{ $('Switch').item.json.payload.to }}",
+        "text": "Laporan sebelumnya sudah kedaluwarsa. Silakan kirim !lapor lagi.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2112,
+        688
+      ],
+      "id": "c44ccaea-e691-4045-9f82-e0abf12edcf6",
+      "name": "Send a text message3",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('check-message-and-user').first().json;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nconst sourceGroup = trigger.payload.from;\nconst session = trigger.session;\nconst beach_location = beachMap[sourceGroup] || \"unknown_beach\";\n\nreturn [\n  {\n    json: {\n      lik_codes: $input.first().json.lik_codes,\n      sourceGroup,\n      session,\n      beach_location,\n      locationText: beach_location,\n      reporterId: trigger.payload.participant\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        112
+      ],
+      "id": "aeaee1a4-1425-4eee-87f7-596c0f36d8e3",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.fruz.cloud/api/report",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "lik_codes",
+              "value": "={{ $json.lik_codes }}"
+            },
+            {
+              "name": "beach_location",
+              "value": "={{ $json.beach_location }}"
+            },
+            {
+              "name": "_channel",
+              "value": "WA"
+            },
+            {
+              "name": "_experimentId",
+              "value": "=={{ $('check-message-and-user').first().json.payload.body.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1888,
+        496
+      ],
+      "id": "01e3cbf4-a526-4e4f-a40b-203796121e6d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = `https://maps.google.com/?q=${$('Code in JavaScript4').first().json.latitude},${$('Code in JavaScript4').first().json.longitude}` || \"Lokasi tidak diketahui\";\n\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        496
+      ],
+      "id": "edaf1738-6c87-4823-af63-8d7088e6c3ff",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "chatId": "={{ $json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2336,
+        496
+      ],
+      "id": "397ed07b-9756-4455-88b6-2f92994f91a0",
+      "name": "Start Typing3",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=5"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2544,
+        496
+      ],
+      "id": "730b4193-ea3e-414b-82b4-e23ec736a973",
+      "name": "Wait3",
+      "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Code in JavaScript7').item.json.session }}",
+        "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
+        "reply_to": "={{ $('Code in JavaScript7').item.json.chatId }}",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2944,
+        496
+      ],
+      "id": "d638cb22-7417-40bf-883b-55c2b2dc28fa",
+      "name": "Send a text message4",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Code in JavaScript7').item.json.session }}",
+        "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2752,
+        496
+      ],
+      "id": "ad409de4-8b11-444a-9d12-e6c971f159e2",
+      "name": "Stop Typing3",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c544957d-7ef5-4d78-aacd-9d1a96e9b827",
+              "leftValue": "={{ $json.payload.body }}",
+              "rightValue": "[EXP-",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        304
+      ],
+      "id": "47874979-547c-4fe8-ac49-4ac99ec84fac",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $('check-message-and-user').first().json.payload.from;\n\n  const beachMap = {\n    \"120363406629965480@g.us\": \"pantai_lampuuk\",\n    \"120363425830719164@g.us\": \"pantai_lhoknga\"\n  };\n\n  return {\n    lik_codes: [\"Wn-5\", \"Wn-6\", \"Ts-1\", \"Ts-3\"],\n    location_context: \"shore\",\n    beach_location: beachMap[chatId] || \"unknown_beach\"\n  };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        352
+      ],
+      "id": "156bf87f-fc20-4cce-827a-0b85c3b97988",
+      "name": "Code in JavaScript5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "check-message-and-user": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA Trigger": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Seen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "check-message-and-user",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Start Typing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Start Typing2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Start Typing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing3": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message4": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f084a25c-7912-464f-b425-56b3f7ee6eb2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf1c678566c6708fb6e13440408012aca4ce4aa9432332b6ded9194e33e873fa"
+  },
+  "id": "GBTC8hB9mA7CtBJz",
+  "tags": []
+}

@@ -135,6 +135,8 @@ route.post("/report", async (c) => {
 		const mlPayload = {
 			lik_codes: input.lik_codes,
 			beach_location: beachLocation,
+			...(input.is_active_warning !== undefined && { is_active_warning: input.is_active_warning }),
+			...(input.active_warning !== undefined && { active_warning: input.active_warning }),
 		};
 
 		const mlRes = await fetch(`${ML_BASE_URL}/predict`, {
@@ -163,7 +165,7 @@ route.post("/report", async (c) => {
 		const result = (await mlRes.json()) as MlResult;
 
 		const isMultisign = input.lik_codes.length > 3;
-		const isHighRisk = result.community_risk_behaviour === "Unsafe";
+		const isActionable = result.community_characteristics === "Actionable";
 		const shouldDistribute = true;
 
 		const alertEvent = {
@@ -178,7 +180,7 @@ route.post("/report", async (c) => {
 				email: reporterEmail,
 			},
 			decision: {
-				community_risk_behaviour: result.community_risk_behaviour,
+				community_characteristics: result.community_characteristics,
 				is_multisign: isMultisign,
 				shouldDistribute,
 			},
@@ -216,9 +218,8 @@ route.post("/report", async (c) => {
 		console.log("[report] published OK");
 
 		if (channel !== "WHATSAPP") {
-			const firstSign = result.detected_signs[0]?.desc ?? result.description;
 			await sendWAAlert(
-				`⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n${firstSign}\n\nLokasi Laporan:\n${beachLocation}\n\nMohon berhati-hati saat melaut.`,
+				`⚠️ PERINGATAN CUACA\n\n${result.action_recommendation}\n\nLokasi Laporan:\n${beachLocation}\n\nMohon berhati-hati saat melaut.`,
 			);
 		}
 
