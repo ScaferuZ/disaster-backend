@@ -1,12 +1,16 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
 import { sendWAAlert } from "../lib/waha";
+import { processReport, resetQueues, getActiveWarning, setActiveWarning } from "../lib/crowdsource";
 import {
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
 	ML_BASE_URL,
 	REPORT_DEDUPE_PREFIX,
 	REPORT_SYNC_STREAM,
+	REPORT_WINDOW_MS,
+	REPORT_THRESHOLD,
+	ACTIVE_WARNING_TTL_SECONDS,
 } from "../config";
 import { ALLOWED_BEACH_LOCATIONS } from "../types";
 import type { MlResult, PredictionInput } from "../types";
@@ -132,11 +136,38 @@ route.post("/report", async (c) => {
 	try {
 		const serverTimestamp = Date.now();
 		const reportId = crypto.randomUUID();
+
+		// Crowdsource queue: accumulate reports per (beach, code) and check threshold
+		const { triggeredCodes } = await processReport(
+			beachLocation,
+			input.lik_codes,
+			REPORT_WINDOW_MS,
+			REPORT_THRESHOLD,
+		);
+
+		if (triggeredCodes.length === 0) {
+			await logReportSyncEvent({
+				status: "QUEUED",
+				clientReportId: clientReportId ?? null,
+				createdAtClient: createdAtClient ?? null,
+				receivedAtServer: Date.now(),
+				syncDelayMs,
+				beachLocation,
+				lik_codes: input.lik_codes,
+			});
+			return c.json({ ok: true, reportId, serverTimestamp, status: "queued" });
+		}
+
+		// Threshold hit — reset triggered code queues and proceed to ML
+		await resetQueues(beachLocation, triggeredCodes);
+
+		const existingWarning = await getActiveWarning(beachLocation);
+
 		const mlPayload = {
-			lik_codes: input.lik_codes,
+			lik_codes: triggeredCodes,
 			beach_location: beachLocation,
-			...(input.is_active_warning !== undefined && { is_active_warning: input.is_active_warning }),
-			...(input.active_warning !== undefined && { active_warning: input.active_warning }),
+			is_active_warning: existingWarning !== null,
+			active_warning: existingWarning?.codes ?? [],
 		};
 
 		const mlRes = await fetch(`${ML_BASE_URL}/predict`, {
@@ -164,7 +195,7 @@ route.post("/report", async (c) => {
 
 		const result = (await mlRes.json()) as MlResult;
 
-		const isMultisign = input.lik_codes.length > 3;
+		const isMultisign = triggeredCodes.length > 1;
 		const isActionable = result.community_characteristics === "Actionable";
 		const shouldDistribute = true;
 
@@ -182,11 +213,15 @@ route.post("/report", async (c) => {
 			decision: {
 				community_characteristics: result.community_characteristics,
 				is_multisign: isMultisign,
+				is_actionable: isActionable,
 				shouldDistribute,
 			},
 			input: mlPayload,
 			ml: result,
 		};
+
+		// Store new active warning with 12h TTL
+		await setActiveWarning(beachLocation, triggeredCodes, alertEvent.alertId, ACTIVE_WARNING_TTL_SECONDS);
 
 		const alertJson = JSON.stringify(alertEvent);
 
@@ -202,7 +237,6 @@ route.post("/report", async (c) => {
 				alertId: alertEvent.alertId,
 			});
 		} else if (isWA) {
-			// Always log WA requests even without an experiment ID
 			await redis.xAdd("experiments:triggers", "*", {
 				experimentId: "untagged",
 				channel,
@@ -236,7 +270,7 @@ route.post("/report", async (c) => {
 		}
 
 		await logReportSyncEvent({
-			status: "ACCEPTED",
+			status: "TRIGGERED",
 			clientReportId: clientReportId ?? null,
 			createdAtClient: createdAtClient ?? null,
 			receivedAtServer: Date.now(),
@@ -244,6 +278,7 @@ route.post("/report", async (c) => {
 			reportId,
 			alertId: alertEvent.alertId,
 			shouldDistribute,
+			triggeredCodes,
 		});
 
 		return c.json(responsePayload);
