@@ -392,7 +392,7 @@
         "session": "={{ $('Code in JavaScript1').item.json.session }}",
         "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
         "reply_to": "={{ $('Code in JavaScript1').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendations }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1003,7 +1003,7 @@
         "session": "={{ $('Code in JavaScript7').item.json.session }}",
         "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
         "reply_to": "={{ $('Code in JavaScript7').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendations }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
