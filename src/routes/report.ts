@@ -220,8 +220,12 @@ route.post("/report", async (c) => {
 			ml: result,
 		};
 
-		// Store new active warning with 12h TTL
-		await setActiveWarning(beachLocation, triggeredCodes, alertEvent.alertId, ACTIVE_WARNING_TTL_SECONDS);
+		// Merge ML-returned active_warning with existing codes (union — warnings only grow until TTL)
+		const mergedCodes = [...new Set([
+			...(existingWarning?.codes ?? []),
+			...result.active_warning,
+		])];
+		await setActiveWarning(beachLocation, mergedCodes, alertEvent.alertId, ACTIVE_WARNING_TTL_SECONDS);
 
 		const alertJson = JSON.stringify(alertEvent);
 
