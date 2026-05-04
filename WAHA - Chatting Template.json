@@ -1089,6 +1089,110 @@
       ],
       "id": "156bf87f-fc20-4cce-827a-0b85c3b97988",
       "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a1b2c3d4-0001-0001-0001-000000000001",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "queued",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2080, 112],
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "If queued"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').item.json.payload.id }}",
+        "text": "✅ Laporan diterima. Kami sedang memantau kondisi cuaca di area Anda.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [2300, -20],
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "Send queued ack",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a1b2c3d4-0002-0002-0002-000000000001",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "queued",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2080, 496],
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "If queued1"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').item.json.payload.id }}",
+        "text": "✅ Laporan diterima. Kami sedang memantau kondisi cuaca di area Anda.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [2300, 400],
+      "id": "a1b2c3d4-0002-0002-0002-000000000003",
+      "name": "Send queued ack1",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -1146,6 +1250,24 @@
     },
     "HTTP Request": {
       "main": [
+        [
+          {
+            "node": "If queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If queued": {
+      "main": [
+        [
+          {
+            "node": "Send queued ack",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Code in JavaScript1",
@@ -1434,6 +1556,24 @@
     },
     "HTTP Request1": {
       "main": [
+        [
+          {
+            "node": "If queued1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If queued1": {
+      "main": [
+        [
+          {
+            "node": "Send queued ack1",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Code in JavaScript7",
