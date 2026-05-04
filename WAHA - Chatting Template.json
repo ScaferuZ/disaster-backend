@@ -129,7 +129,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://backend.fruz.cloud/api/report",
+        "url": "https://api.samudraapp.com/api/report",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -392,7 +392,7 @@
         "session": "={{ $('Code in JavaScript1').item.json.session }}",
         "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
         "reply_to": "={{ $('Code in JavaScript1').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendations }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -412,7 +412,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = $('Code in JavaScript8').first().json.locationText || \"Lokasi tidak diketahui\";\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = $('Code in JavaScript8').first().json.locationText || \"Lokasi tidak diketahui\";\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -914,7 +914,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://backend.fruz.cloud/api/report",
+        "url": "https://api.samudraapp.com/api/report",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -949,7 +949,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = `https://maps.google.com/?q=${$('Code in JavaScript4').first().json.latitude},${$('Code in JavaScript4').first().json.longitude}` || \"Lokasi tidak diketahui\";\n\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = `https://maps.google.com/?q=${$('Code in JavaScript4').first().json.latitude},${$('Code in JavaScript4').first().json.longitude}` || \"Lokasi tidak diketahui\";\n\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1003,7 +1003,7 @@
         "session": "={{ $('Code in JavaScript7').item.json.session }}",
         "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
         "reply_to": "={{ $('Code in JavaScript7').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendations }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
