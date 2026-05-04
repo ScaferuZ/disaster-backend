@@ -23,7 +23,7 @@ export type MlResult = {
 	active_warning: string[];
 	sign_description: string;
 	community_characteristics: string;
-	action_recommendations: string;
+	action_recommendation: string;
 };
 
 export type AckInput = {
