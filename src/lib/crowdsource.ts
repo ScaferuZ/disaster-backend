@@ -1,6 +1,7 @@
 import { redis } from "./redis";
 
 const QUEUE_PREFIX = "reports:queue";
+const COOLDOWN_PREFIX = "reports:cooldown";
 const WARNING_PREFIX = "warnings:active";
 
 export type ActiveWarning = {
@@ -18,24 +19,32 @@ export async function processReport(
 	likCodes: string[],
 	windowMs: number,
 	threshold: number,
-): Promise<{ triggeredCodes: string[] }> {
+): Promise<{ triggeredCodes: string[]; codeCounts: Record<string, number> }> {
 	const now = Date.now();
 	const windowStart = now - windowMs;
 	const triggeredCodes: string[] = [];
+	const codeCounts: Record<string, number> = {};
 
 	for (const code of likCodes) {
 		const key = `${QUEUE_PREFIX}:${beachLocation}:${code.toLowerCase()}`;
+		const cooldownKey = `${COOLDOWN_PREFIX}:${beachLocation}:${code}`;
 
 		await redis.zAdd(key, { score: now, value: crypto.randomUUID() });
 		await redis.zRemRangeByScore(key, 0, windowStart);
 		const count = await redis.zCard(key);
 
+		codeCounts[code] = count;
+
 		if (count >= threshold) {
-			triggeredCodes.push(code);
+			const cooldownExists = await redis.get(cooldownKey);
+			if (!cooldownExists) {
+				triggeredCodes.push(code);
+				await redis.set(cooldownKey, "1", { EX: Math.ceil(windowMs / 1000) });
+			}
 		}
 	}
 
-	return { triggeredCodes };
+	return { triggeredCodes, codeCounts };
 }
 
 /**

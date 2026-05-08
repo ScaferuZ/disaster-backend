@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
 import { sendWAAlert } from "../lib/waha";
-import { processReport, resetQueues, getActiveWarning, setActiveWarning } from "../lib/crowdsource";
+import { processReport, getActiveWarning, setActiveWarning } from "../lib/crowdsource";
 import {
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
@@ -29,6 +29,7 @@ type ReportResponse = {
 	serverTimestamp: number;
 	shouldDistribute: boolean;
 	alertEvent: Record<string, unknown>;
+	reportCounts: Record<string, number>;
 };
 
 async function logReportSyncEvent(event: Record<string, unknown>) {
@@ -138,7 +139,7 @@ route.post("/report", async (c) => {
 		const reportId = crypto.randomUUID();
 
 		// Crowdsource queue: accumulate reports per (beach, code) and check threshold
-		const { triggeredCodes } = await processReport(
+		const { triggeredCodes, codeCounts } = await processReport(
 			beachLocation,
 			input.lik_codes,
 			REPORT_WINDOW_MS,
@@ -155,11 +156,10 @@ route.post("/report", async (c) => {
 				beachLocation,
 				lik_codes: input.lik_codes,
 			});
-			return c.json({ ok: true, reportId, serverTimestamp, status: "queued" });
+			return c.json({ ok: true, reportId, serverTimestamp, status: "queued", reportCounts: codeCounts });
 		}
 
-		// Threshold hit — reset triggered code queues and proceed to ML
-		await resetQueues(beachLocation, triggeredCodes);
+		// Threshold hit — proceed to ML
 
 		const existingWarning = await getActiveWarning(beachLocation);
 
@@ -267,6 +267,7 @@ route.post("/report", async (c) => {
 			serverTimestamp,
 			shouldDistribute,
 			alertEvent,
+			reportCounts: codeCounts,
 		};
 
 		if (dedupeKey) {
