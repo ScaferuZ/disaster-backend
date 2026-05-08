@@ -60,9 +60,49 @@ const openApiDoc = {
 					},
 				},
 				responses: {
-					"200": { description: "Report accepted and canonical alert generated" },
+					"200": {
+						description: "Report accepted. Returns `status: queued` with `reportCounts` if threshold not yet reached, or full alert event with `reportCounts` once threshold is hit.",
+						content: {
+							"application/json": {
+								schema: {
+									oneOf: [
+										{ $ref: "#/components/schemas/ReportQueued" },
+										{ $ref: "#/components/schemas/ReportTriggered" },
+									],
+								},
+							},
+						},
+					},
 					"400": { description: "Invalid payload" },
 					"502": { description: "ML service failure" },
+				},
+			},
+		},
+		"/api/reports/active": {
+			get: {
+				summary: "Get current active crowdsource report counts per beach",
+				description: "Returns live report counts per LIK code within the current time window, whether each code has already triggered ML this window, and the active warning with full ML data if one exists.",
+				tags: ["Report"],
+				security: [{ bearerAuth: [] }],
+				parameters: [
+					{
+						in: "query",
+						name: "beach_location",
+						required: true,
+						schema: { type: "string", enum: ALLOWED_BEACH_LOCATIONS },
+						description: "Beach location to query",
+					},
+				],
+				responses: {
+					"200": {
+						description: "Current crowdsource state for the beach",
+						content: {
+							"application/json": {
+								schema: { $ref: "#/components/schemas/ReportsActiveResponse" },
+							},
+						},
+					},
+					"400": { description: "Missing or invalid beach_location" },
 				},
 			},
 		},
@@ -347,6 +387,107 @@ const openApiDoc = {
 					noIdentitasNelayan: { type: "string" },
 					email: { type: "string", format: "email" },
 					createdAt: { type: "number" },
+				},
+			},
+			ReportCodeCount: {
+				type: "object",
+				properties: {
+					count: { type: "number", description: "Number of reports for this code within the current window" },
+					triggered: { type: "boolean", description: "Whether ML was already triggered for this code this window" },
+				},
+			},
+			ReportQueued: {
+				type: "object",
+				properties: {
+					ok: { type: "boolean", example: true },
+					reportId: { type: "string", format: "uuid" },
+					serverTimestamp: { type: "number" },
+					status: { type: "string", example: "queued" },
+					reportCounts: {
+						type: "object",
+						additionalProperties: { $ref: "#/components/schemas/ReportCodeCount" },
+						description: "Current report count per LIK code for this beach within the window",
+						example: { K1: { count: 3, triggered: false } },
+					},
+				},
+			},
+			ReportTriggered: {
+				type: "object",
+				properties: {
+					ok: { type: "boolean", example: true },
+					reportId: { type: "string", format: "uuid" },
+					serverTimestamp: { type: "number" },
+					shouldDistribute: { type: "boolean" },
+					reportCounts: {
+						type: "object",
+						additionalProperties: { $ref: "#/components/schemas/ReportCodeCount" },
+						description: "Report counts per LIK code at the time of trigger",
+						example: { K1: { count: 5, triggered: true } },
+					},
+					alertEvent: {
+						type: "object",
+						description: "Full alert event including ML result",
+						properties: {
+							alertId: { type: "string", format: "uuid" },
+							reportId: { type: "string", format: "uuid" },
+							serverTimestamp: { type: "number" },
+							decision: {
+								type: "object",
+								properties: {
+									community_characteristics: { type: "string", example: "Actionable" },
+									is_multisign: { type: "boolean" },
+									is_actionable: { type: "boolean" },
+									shouldDistribute: { type: "boolean" },
+								},
+							},
+							ml: {
+								type: "object",
+								properties: {
+									action_recommendation: { type: "string" },
+									active_warning: { type: "array", items: { type: "string" } },
+								},
+							},
+							input: {
+								type: "object",
+								properties: {
+									lik_codes: { type: "array", items: { type: "string" } },
+									beach_location: { type: "string" },
+									is_active_warning: { type: "boolean" },
+									active_warning: { type: "array", items: { type: "string" } },
+								},
+							},
+						},
+					},
+				},
+			},
+			ActiveWarning: {
+				type: "object",
+				nullable: true,
+				properties: {
+					codes: { type: "array", items: { type: "string" } },
+					triggeredAt: { type: "number" },
+					alertId: { type: "string", format: "uuid" },
+					alertEvent: {
+						type: "object",
+						nullable: true,
+						description: "Full ML alert event stored at trigger time",
+					},
+				},
+			},
+			ReportsActiveResponse: {
+				type: "object",
+				properties: {
+					ok: { type: "boolean", example: true },
+					beach_location: { type: "string" },
+					window_ms: { type: "number", description: "Report window in milliseconds" },
+					threshold: { type: "number", description: "Number of reports required to trigger ML" },
+					counts: {
+						type: "object",
+						additionalProperties: { $ref: "#/components/schemas/ReportCodeCount" },
+						description: "Per-code report counts (only codes with count > 0 are shown)",
+						example: { K1: { count: 4, triggered: false }, K3: { count: 6, triggered: true } },
+					},
+					active_warning: { $ref: "#/components/schemas/ActiveWarning" },
 				},
 			},
 			StreamNames: {
