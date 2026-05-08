@@ -225,7 +225,7 @@ route.post("/report", async (c) => {
 			...(existingWarning?.codes ?? []),
 			...result.active_warning,
 		])];
-		await setActiveWarning(beachLocation, mergedCodes, alertEvent.alertId, ACTIVE_WARNING_TTL_SECONDS);
+		await setActiveWarning(beachLocation, mergedCodes, alertEvent.alertId, ACTIVE_WARNING_TTL_SECONDS, alertEvent);
 
 		const alertJson = JSON.stringify(alertEvent);
 
