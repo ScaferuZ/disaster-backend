@@ -1,0 +1,13 @@
+F3 RUNTIME QA (adapted: no live Redis available, pure-function chain verified)
+=============================================================================
+alertEvent.experimentId: EXP-001 | fields: eventType,alertId,reportId,serverTimestamp,experimentId,client,decision,input,ml
+ack.experimentId: EXP-001 | latency: 200 | ackKey: a1:PUSH:DELIVERED:anon
+pushRecord: {"alertId":"a1","experimentId":"EXP-001","sent":5,"total":6}
+syncRate new(TRIGGERED:3,QUEUED:1,FAILED_ML:1): 0.8 | legacy(ACCEPTED:50): 1
+partitionLatencies([10,-5,20]): {"valid":[10,20],"negativeLatencyCount":1}
+pwaLatency(matched by experimentId+alertId): 330
+RESULT: ALL PURE-FN CHAINS OK
+tsc --noEmit: exit 0 | bun test: 22 pass / 0 fail
+NOTE: Live-Redis XRANGE assertions (original F3 scenario) substituted by mock-based
+unit tests (push-delivery.test.ts, waha-send.test.ts, ack-event.test.ts) which assert
+the exact xAdd stream writes. redis-cli/server unavailable in this environment.

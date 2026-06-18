@@ -1,0 +1,11 @@
+bun test v1.3.8 (b64edcb4)
+
+src/__tests__/setup.test.ts:
+(pass) bun test harness > sanity check
+(pass) bun test harness > parseStreamJson parses XRANGE-like rows [0.28ms]
+(pass) bun test harness > createMockRedis records calls and stores values in memory [0.52ms]
+
+ 3 pass
+ 0 fail
+ 14 expect() calls
+Ran 3 tests across 1 file. [13.00ms]
