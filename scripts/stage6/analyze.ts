@@ -24,6 +24,9 @@ type ResourceRow = {
   rssKb: number;
 };
 
+const SYNC_SUCCESS_STATUSES = ["TRIGGERED", "QUEUED", "DEDUPED", "ACCEPTED"] as const;
+const SYNC_FAILURE_STATUSES = ["FAILED_ML"] as const;
+
 function getArg(name: string): string | undefined {
   const prefix = `--${name}=`;
   const match = process.argv.find((arg) => arg.startsWith(prefix));
@@ -73,6 +76,22 @@ function summarizeNumbers(values: number[]) {
     p50: percentile(sorted, 50),
     p95: percentile(sorted, 95),
   };
+}
+
+export function computeSyncSuccessRate(statusCounts: Record<string, number>): number | null {
+  // Legacy stage6 artifacts used ACCEPTED before the report route switched to TRIGGERED/QUEUED/DEDUPED.
+  const successCount = SYNC_SUCCESS_STATUSES.reduce(
+    (total, status) => total + (statusCounts[status] ?? 0),
+    0,
+  );
+  const failureCount = SYNC_FAILURE_STATUSES.reduce(
+    (total, status) => total + (statusCounts[status] ?? 0),
+    0,
+  );
+  const knownCount = successCount + failureCount;
+
+  if (knownCount === 0) return null;
+  return Number((successCount / knownCount).toFixed(4));
 }
 
 function parseAckEvents(rows: ExportedRow[]): AckEvent[] {
@@ -169,12 +188,7 @@ async function run() {
     syncStatusCounts[status] = (syncStatusCounts[status] ?? 0) + 1;
   }
 
-  const accepted = syncStatusCounts.ACCEPTED ?? 0;
-  const deduped = syncStatusCounts.DEDUPED ?? 0;
-  const failedMl = syncStatusCounts.FAILED_ML ?? 0;
-  const syncDenominator = accepted + deduped + failedMl;
-  const syncSuccessRate =
-    syncDenominator > 0 ? Number(((accepted + deduped) / syncDenominator).toFixed(4)) : null;
+  const syncSuccessRate = computeSyncSuccessRate(syncStatusCounts);
 
   let resourceSummary: Record<string, unknown> | null = null;
   const resourceFile = Bun.file(`${rawDir}/resources.csv`);
@@ -245,7 +259,9 @@ async function run() {
   console.log(`[stage6] analysis written to ${outDir}`);
 }
 
-run().catch((error) => {
-  console.error("[stage6] analyze fatal", error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  run().catch((error) => {
+    console.error("[stage6] analyze fatal", error);
+    process.exit(1);
+  });
+}
