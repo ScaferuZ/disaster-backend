@@ -293,6 +293,7 @@ route.post("/report", async (c) => {
 		if (channel !== "WHATSAPP") {
 			await sendWAAlert(
 				`⚠️ PERINGATAN CUACA\n\n${result.action_recommendation}\n\nLokasi Laporan:\n${beachLocation}\n\nMohon berhati-hati saat melaut.`,
+				alertEvent.experimentId,
 			);
 		}
 

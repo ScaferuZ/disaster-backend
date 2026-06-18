@@ -67,6 +67,7 @@ export const WAHA_BROADCAST_GROUPS = parseCsvEnv(
 	process.env.WAHA_BROADCAST_GROUPS,
 	["120363406629965480@g.us", "120363425830719164@g.us"],
 );
+export const WA_SEND_STREAM = process.env.WA_SEND_STREAM ?? "whatsapp:send";
 
 if (JWT_AUTH_ENABLED && !JWT_SECRET) {
 	throw new Error("JWT_AUTH_ENABLED=true requires JWT_SECRET to be set");
