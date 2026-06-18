@@ -13,7 +13,7 @@ import {
 	ACTIVE_WARNING_TTL_SECONDS,
 } from "../config";
 import { ALLOWED_BEACH_LOCATIONS } from "../types";
-import type { MlResult, PredictionInput } from "../types";
+import type { AlertEvent, MlPayload, MlResult, PredictionInput } from "../types";
 
 const route = new Hono();
 const REPORT_DEDUPE_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -28,9 +28,49 @@ type ReportResponse = {
 	reportId: string;
 	serverTimestamp: number;
 	shouldDistribute: boolean;
-	alertEvent: Record<string, unknown>;
+	alertEvent: AlertEvent;
 	reportCounts: Record<string, number>;
 };
+
+type BuildAlertEventParams = {
+	alertId: string;
+	reportId: string;
+	serverTimestamp: number;
+	clientReportId: string | undefined;
+	createdAtClient: number | undefined;
+	reporterUserId: string | null;
+	reporterEmail: string | null;
+	mlPayload: MlPayload;
+	mlResult: MlResult;
+	isMultisign: boolean;
+	isActionable: boolean;
+	shouldDistribute: boolean;
+	experimentId: unknown;
+};
+
+export function buildAlertEvent(params: BuildAlertEventParams): AlertEvent {
+	return {
+		eventType: "DISASTER_ALERT",
+		alertId: params.alertId,
+		reportId: params.reportId,
+		serverTimestamp: params.serverTimestamp,
+		experimentId: typeof params.experimentId === "string" ? params.experimentId : null,
+		client: {
+			clientReportId: params.clientReportId ?? null,
+			createdAtClient: params.createdAtClient ?? null,
+			userId: params.reporterUserId,
+			email: params.reporterEmail,
+		},
+		decision: {
+			community_characteristics: params.mlResult.community_characteristics,
+			is_multisign: params.isMultisign,
+			is_actionable: params.isActionable,
+			shouldDistribute: params.shouldDistribute,
+		},
+		input: params.mlPayload,
+		ml: params.mlResult,
+	};
+}
 
 async function logReportSyncEvent(event: Record<string, unknown>) {
 	await redis.xAdd(REPORT_SYNC_STREAM, "*", { json: JSON.stringify(event) });
@@ -199,26 +239,21 @@ route.post("/report", async (c) => {
 		const isActionable = result.community_characteristics === "Actionable";
 		const shouldDistribute = true;
 
-		const alertEvent = {
-			eventType: "DISASTER_ALERT",
+		const alertEvent = buildAlertEvent({
 			alertId: crypto.randomUUID(),
 			reportId,
 			serverTimestamp,
-			client: {
-				clientReportId: clientReportId ?? null,
-				createdAtClient: createdAtClient ?? null,
-				userId: reporterUserId,
-				email: reporterEmail,
-			},
-			decision: {
-				community_characteristics: result.community_characteristics,
-				is_multisign: isMultisign,
-				is_actionable: isActionable,
-				shouldDistribute,
-			},
-			input: mlPayload,
-			ml: result,
-		};
+			clientReportId,
+			createdAtClient,
+			reporterUserId,
+			reporterEmail,
+			mlPayload,
+			mlResult: result,
+			isMultisign,
+			isActionable,
+			shouldDistribute,
+			experimentId: input._experimentId,
+		});
 
 		// Merge ML-returned active_warning with existing codes (union — warnings only grow until TTL)
 		const mergedCodes = [...new Set([

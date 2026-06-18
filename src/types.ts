@@ -26,6 +26,35 @@ export type MlResult = {
 	action_recommendation: string;
 };
 
+export type MlPayload = {
+	lik_codes: string[];
+	beach_location: string;
+	is_active_warning: boolean;
+	active_warning: string[];
+};
+
+export type AlertEvent = {
+	eventType: "DISASTER_ALERT";
+	alertId: string;
+	reportId: string;
+	serverTimestamp: number;
+	experimentId: string | null;
+	client: {
+		clientReportId: string | null;
+		createdAtClient: number | null;
+		userId: string | null;
+		email: string | null;
+	};
+	decision: {
+		community_characteristics: string;
+		is_multisign: boolean;
+		is_actionable: boolean;
+		shouldDistribute: boolean;
+	};
+	input: MlPayload;
+	ml: MlResult;
+};
+
 export type AckInput = {
 	alertId: string;
 	transport: "SSE" | "WS" | "PUSH";
