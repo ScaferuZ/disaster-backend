@@ -162,10 +162,11 @@ async function readWhatsAppStream(
       "100",
     ]);
 
-    if (!reply || reply.length === 0) break;
+    const rows = Array.isArray(reply) ? reply : [];
+    if (rows.length === 0) break;
 
-    for (const item of reply) {
-      const id = item[0];
+    for (const item of rows) {
+      const id = String(item[0]);
       const fields = item[1] as Record<string, string>;
 
       // Check if this entry belongs to our experiment
@@ -183,7 +184,7 @@ async function readWhatsAppStream(
     }
 
     // If we got less than 100, we've reached the end
-    if (reply.length < 100) break;
+    if (rows.length < 100) break;
   }
 
   return entries as WhatsAppIncoming[] | WhatsAppOutgoing[];
@@ -206,18 +207,19 @@ async function readTriggersFromRedis(
       "100",
     ]);
 
-    if (!reply || reply.length === 0) break;
+    const rows = Array.isArray(reply) ? reply : [];
+    if (rows.length === 0) break;
 
-    for (const item of reply) {
-      const id = item[0];
+    for (const item of rows) {
+      const id = String(item[0]);
       const fields = item[1] as Record<string, string>;
 
       if (fields.experimentId === experimentId) {
         triggers.push({
-          runId: fields.runId,
-          alertId: fields.alertId,
-          channel: fields.channel as "PWA" | "WhatsApp",
-          triggeredAt: fields.triggeredAt,
+          runId: fields.runId ?? experimentId,
+          alertId: fields.alertId ?? "",
+          channel: fields.channel === "WhatsApp" ? "WhatsApp" : "PWA",
+          triggeredAt: fields.triggeredAt ?? "",
           experimentId: fields.experimentId,
           metadata: fields.metadata ? JSON.parse(fields.metadata) : undefined,
         });
@@ -226,7 +228,7 @@ async function readTriggersFromRedis(
       start = id;
     }
 
-    if (reply.length < 100) break;
+    if (rows.length < 100) break;
   }
 
   return triggers;
@@ -249,30 +251,59 @@ async function readAcksFromRedis(
       "100",
     ]);
 
-    if (!reply || reply.length === 0) break;
+    const rows = Array.isArray(reply) ? reply : [];
+    if (rows.length === 0) break;
 
-    for (const item of reply) {
-      const id = item[0];
+    for (const item of rows) {
+      const id = String(item[0]);
       const fields = item[1] as Record<string, string>;
 
       if (fields.experimentId === experimentId) {
         acks.push({
-          alertId: fields.alertId,
-          experimentId: fields.experimentId,
-          channel: fields.transport as "PWA" | "WhatsApp",
-          receivedAtClient: fields.receivedAtClient,
-          serverTimestamp: fields.serverTimestamp,
-          ackStage: fields.ackStage,
+          alertId: fields.alertId ?? "",
+          experimentId: fields.experimentId ?? experimentId,
+          channel: fields.transport === "WhatsApp" ? "WhatsApp" : "PWA",
+          receivedAtClient: fields.receivedAtClient ?? "",
+          serverTimestamp: fields.serverTimestamp ?? "",
+          ackStage: fields.ackStage ?? "",
         });
       }
 
       start = id;
     }
 
-    if (reply.length < 100) break;
+    if (rows.length < 100) break;
   }
 
   return acks;
+}
+
+export function computePwaLatency(
+  triggers: TriggerEvent[],
+  acks: AckEvent[],
+  experimentId: string,
+): number | null {
+  const pwaTrigger = triggers.find(
+    (trigger) => trigger.channel === "PWA" && trigger.experimentId === experimentId,
+  );
+
+  if (!pwaTrigger) return null;
+
+  const pwaAck = acks.find(
+    (ack) =>
+      ack.channel === "PWA" &&
+      ack.experimentId === experimentId &&
+      ack.alertId === pwaTrigger.alertId,
+  );
+
+  if (!pwaAck) return null;
+
+  const triggeredAt = toNumber(pwaTrigger.triggeredAt);
+  const receivedAt = toNumber(pwaAck.receivedAtClient);
+
+  if (triggeredAt === null || receivedAt === null) return null;
+
+  return receivedAt - triggeredAt;
 }
 
 // Analysis functions
@@ -290,8 +321,10 @@ async function analyzeExperiment(
   // Match incoming/outgoing pairs
   let whatsappLatencyMs: number | null = null;
   if (incoming.length > 0 && outgoing.length > 0) {
-    const incomingTs = toNumber(incoming[0].timestamp);
-    const outgoingTs = toNumber(outgoing[0].timestamp);
+    const firstIncoming = incoming[0];
+    const firstOutgoing = outgoing[0];
+    const incomingTs = toNumber(firstIncoming?.timestamp ?? null);
+    const outgoingTs = toNumber(firstOutgoing?.timestamp ?? null);
     if (incomingTs !== null && outgoingTs !== null) {
       whatsappLatencyMs = outgoingTs - incomingTs;
     }
@@ -302,18 +335,7 @@ async function analyzeExperiment(
   const acks = await readAcksFromRedis(client, experimentId);
 
   // Calculate PWA latency
-  let pwaLatencyMs: number | null = null;
-  const pwaTrigger = triggers.find((t) => t.channel === "PWA");
-  if (pwaTrigger) {
-    const pwaAck = acks.find((a) => a.channel === "PWA" && a.alertId === pwaTrigger.alertId);
-    if (pwaAck) {
-      const triggeredAt = toNumber(pwaTrigger.triggeredAt);
-      const receivedAt = toNumber(pwaAck.receivedAtClient);
-      if (triggeredAt !== null && receivedAt !== null) {
-        pwaLatencyMs = receivedAt - triggeredAt;
-      }
-    }
-  }
+  const pwaLatencyMs = computePwaLatency(triggers, acks, experimentId);
 
   // Determine winner
   let winner: "PWA" | "WhatsApp" | "tie" | "N/A" = "N/A";
@@ -491,7 +513,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error("Fatal error:", error);
+    process.exit(1);
+  });
+}
