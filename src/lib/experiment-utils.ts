@@ -28,7 +28,7 @@ export function generateExperimentId(index: number): string {
  */
 export function parseExperimentIdFromMessage(text: string): string | null {
   const match = text.match(/\[([A-Z0-9-]+)\]/)
-  return match ? match[1] : null
+  return match?.[1] ?? null
 }
 
 /**
