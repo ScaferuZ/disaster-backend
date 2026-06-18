@@ -136,6 +136,14 @@ Comparison Summary:
 - **P99**: 99th percentile latency
 - **Min/Max**: Minimum and maximum observed latencies
 
+## Limitations / Clock Skew
+
+For stage 6 ACK analysis, latency is computed as `receivedAtClient - serverTimestamp`.
+This assumes client clock and server clock are synchronized. There is no NTP sync
+guarantee in the data path, so negative latency values are treated as clock-skew
+anomalies: they are excluded from latency statistics and counted as
+`negativeLatencyCount` in the output summary.
+
 ### Delivery Metrics
 - **Total Triggers**: Number of alert triggers sent to this channel
 - **Total ACKs**: Number of ACK events received

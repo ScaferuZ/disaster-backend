@@ -78,6 +78,22 @@ function summarizeNumbers(values: number[]) {
   };
 }
 
+export function partitionLatencies(values: number[]): { valid: number[]; negativeLatencyCount: number } {
+  const valid: number[] = [];
+  let negativeLatencyCount = 0;
+
+  for (const value of values) {
+    if (value < 0) {
+      negativeLatencyCount += 1;
+      continue;
+    }
+
+    valid.push(value);
+  }
+
+  return { valid, negativeLatencyCount };
+}
+
 export function computeSyncSuccessRate(statusCounts: Record<string, number>): number | null {
   // Legacy stage6 artifacts used ACCEPTED before the report route switched to TRIGGERED/QUEUED/DEDUPED.
   const successCount = SYNC_SUCCESS_STATUSES.reduce(
@@ -169,7 +185,10 @@ async function run() {
       .map((event) => toNumber(event.endToEndLatencyMs))
       .filter((value): value is number => value !== null);
 
-    for (const latency of latencies) {
+    const { valid: cleanedLatencies, negativeLatencyCount } = partitionLatencies(latencies);
+
+    // Negative values are clock-skew anomalies; keep latency.csv aligned with the cleaned stats.
+    for (const latency of cleanedLatencies) {
       latencyCsvLines.push(`${transport},${latency}`);
     }
 
@@ -178,7 +197,8 @@ async function run() {
       deliveredAckCount: deliveredEvents.length,
       deliveredUniqueAlerts: uniqueDeliveredAlertIds.size,
       deliveryRate: alertsCount > 0 ? Number((uniqueDeliveredAlertIds.size / alertsCount).toFixed(4)) : null,
-      latencyMs: summarizeNumbers(latencies),
+      negativeLatencyCount,
+      latencyMs: summarizeNumbers(cleanedLatencies),
     };
   }
 
@@ -225,7 +245,7 @@ async function run() {
   await Bun.write(`${outDir}/latency.csv`, `${latencyCsvLines.join("\n")}\n`);
 
   const protocolRows = [
-    "transport,ackCount,deliveredAckCount,deliveredUniqueAlerts,deliveryRate,latencyMeanMs,latencyP50Ms,latencyP95Ms",
+    "transport,ackCount,deliveredAckCount,deliveredUniqueAlerts,deliveryRate,negativeLatencyCount,latencyMeanMs,latencyP50Ms,latencyP95Ms",
   ];
 
   for (const transport of ["SSE", "WS", "PUSH"] as const) {
@@ -234,6 +254,7 @@ async function run() {
       deliveredAckCount: number;
       deliveredUniqueAlerts: number;
       deliveryRate: number | null;
+      negativeLatencyCount: number;
       latencyMs: {
         mean: number | null;
         p50: number | null;
@@ -247,6 +268,7 @@ async function run() {
       protocolMetrics.deliveredAckCount,
       protocolMetrics.deliveredUniqueAlerts,
       protocolMetrics.deliveryRate ?? "",
+      protocolMetrics.negativeLatencyCount,
       protocolMetrics.latencyMs.mean ?? "",
       protocolMetrics.latencyMs.p50 ?? "",
       protocolMetrics.latencyMs.p95 ?? "",
