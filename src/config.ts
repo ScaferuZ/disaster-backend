@@ -23,6 +23,7 @@ export const REPORT_WINDOW_MS = Number(process.env.REPORT_WINDOW_MS ?? 10 * 60 *
 export const REPORT_THRESHOLD = Number(process.env.REPORT_THRESHOLD ?? 5);
 export const ACTIVE_WARNING_TTL_SECONDS = Number(process.env.ACTIVE_WARNING_TTL_SECONDS ?? 12 * 60 * 60); // 12 hours
 export const PUSH_SUBSCRIPTIONS_HASH = process.env.PUSH_SUBSCRIPTIONS_HASH ?? "alerts:push:subscriptions";
+export const PUSH_DELIVERY_STREAM = process.env.PUSH_DELIVERY_STREAM ?? "push:delivery";
 export const ENABLE_SSE_DELIVERY = parseBoolEnv(process.env.ENABLE_SSE_DELIVERY, true);
 export const ENABLE_WS_DELIVERY = parseBoolEnv(process.env.ENABLE_WS_DELIVERY, true);
 export const ENABLE_PUSH_DELIVERY = parseBoolEnv(process.env.ENABLE_PUSH_DELIVERY, true);

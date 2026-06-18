@@ -4,12 +4,52 @@ import {
 	type PushSubscription,
 } from "web-push";
 import {
+	PUSH_DELIVERY_STREAM,
 	PUSH_SUBSCRIPTIONS_HASH,
 	VAPID_PRIVATE_KEY,
 	VAPID_PUBLIC_KEY,
 	VAPID_SUBJECT,
 } from "../config";
 import { redis } from "./redis";
+
+export type PushDeliveryResult = {
+	sent: number;
+	removed: number;
+	failed: number;
+};
+
+export type PushDeliveryRecord = {
+	timestamp: number;
+	alertId: string | null;
+	experimentId: string | null;
+	sent: number;
+	removed: number;
+	failed: number;
+	totalSubscriptions: number;
+};
+
+type PushStreamClient = {
+	xAdd: (stream: string, id: string, fields: Record<string, string>) => Promise<unknown>;
+	hVals: (key: string) => Promise<string[]>;
+};
+
+export function buildPushDeliveryRecord(
+	alertEvent: Record<string, unknown>,
+	result: PushDeliveryResult,
+	totalSubscriptions: number,
+): PushDeliveryRecord {
+	const alertId = typeof alertEvent.alertId === "string" ? alertEvent.alertId : null;
+	const experimentId = typeof alertEvent.experimentId === "string" ? alertEvent.experimentId : null;
+	return {
+		timestamp: Date.now(),
+		alertId,
+		experimentId,
+		sent: result.sent,
+		removed: result.removed,
+		failed: result.failed,
+		totalSubscriptions,
+	};
+}
 
 let pushConfigured = false;
 
@@ -48,8 +88,8 @@ export async function removePushSubscription(endpoint: string) {
 	await redis.hDel(PUSH_SUBSCRIPTIONS_HASH, endpoint);
 }
 
-export async function listPushSubscriptions() {
-	const rows = await redis.hVals(PUSH_SUBSCRIPTIONS_HASH);
+export async function listPushSubscriptions(client: { hVals: (key: string) => Promise<string[]> } = redis) {
+	const rows = await client.hVals(PUSH_SUBSCRIPTIONS_HASH);
 	const subscriptions: PushSubscription[] = [];
 	for (const row of rows) {
 		try {
@@ -74,7 +114,10 @@ export function isValidPushSubscription(input: unknown): input is PushSubscripti
 	return true;
 }
 
-export async function sendPushAlertToAll(alertJson: string) {
+export async function sendPushAlertToAll(
+	alertJson: string,
+	deps: { redis: PushStreamClient } = { redis },
+) {
 	if (!pushConfigured) return { sent: 0, removed: 0, failed: 0 };
 
 	let alertEvent: Record<string, unknown>;
@@ -91,7 +134,7 @@ export async function sendPushAlertToAll(alertJson: string) {
 		alertEvent,
 	});
 
-	const subscriptions = await listPushSubscriptions();
+	const subscriptions = await listPushSubscriptions(deps.redis);
 	let sent = 0;
 	let removed = 0;
 	let failed = 0;
@@ -116,5 +159,14 @@ export async function sendPushAlertToAll(alertJson: string) {
 		}
 	}
 
-	return { sent, removed, failed };
+	const result = { sent, removed, failed };
+
+	const record = buildPushDeliveryRecord(alertEvent, result, subscriptions.length);
+	try {
+		await deps.redis.xAdd(PUSH_DELIVERY_STREAM, "*", { json: JSON.stringify(record) });
+	} catch (err) {
+		console.warn("[push] failed to persist push:delivery record", err);
+	}
+
+	return result;
 }
