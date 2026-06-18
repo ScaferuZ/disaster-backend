@@ -61,7 +61,16 @@ export type AckInput = {
 	receivedAtClient: number;
 	serverTimestamp: number;
 	ackStage?: "DELIVERED" | "OPENED";
+	experimentId?: string;
 	// Optional fields you can add later:
 	clientId?: string;
 	// userId?: string;
+};
+
+export type AckEvent = Omit<AckInput, "ackStage" | "experimentId"> & {
+	ackStage: "DELIVERED" | "OPENED" | "UNSPECIFIED";
+	experimentId: string | null;
+	receivedAtServer: number;
+	ackKey: string;
+	endToEndLatencyMs: number;
 };

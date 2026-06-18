@@ -1,9 +1,23 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
 import { ACKS_STREAM } from "../config";
-import type { AckInput } from "../types";
+import type { AckEvent, AckInput } from "../types";
 
 const route = new Hono();
+
+export function buildAckEvent(input: AckInput, receivedAtServer: number): AckEvent {
+	const ackStage = input.ackStage ?? "UNSPECIFIED";
+	const ackKey = `${input.alertId}:${input.transport}:${ackStage}:${input.clientId ?? "anon"}`;
+
+	return {
+		...input,
+		ackStage,
+		experimentId: input.experimentId ?? null,
+		receivedAtServer,
+		ackKey,
+		endToEndLatencyMs: input.receivedAtClient - input.serverTimestamp,
+	};
+}
 
 route.post("/ack", async (c) => {
 	const input = await c.req.json<AckInput>().catch(() => null);
@@ -33,16 +47,7 @@ route.post("/ack", async (c) => {
 	}
 
 	const receivedAtServer = Date.now();
-	const ackStage = input.ackStage ?? "UNSPECIFIED";
-	const ackKey = `${input.alertId}:${input.transport}:${ackStage}:${input.clientId ?? "anon"}`;
-
-	const ackEvent = {
-		...input,
-		ackStage,
-		receivedAtServer,
-		ackKey,
-		endToEndLatencyMs: input.receivedAtClient - input.serverTimestamp,
-	};
+	const ackEvent = buildAckEvent(input, receivedAtServer);
 
 	await redis.xAdd(ACKS_STREAM, "*", { json: JSON.stringify(ackEvent) });
 

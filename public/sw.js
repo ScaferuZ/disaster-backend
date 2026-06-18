@@ -108,10 +108,11 @@ self.addEventListener("push", (event) => {
   const body = data.body || "New alert received";
   const alertId = data.alertEvent?.alertId;
   const serverTimestamp = data.alertEvent?.serverTimestamp;
+  const experimentId = data.alertEvent?.experimentId ?? null;
 
   const showPromise = self.registration.showNotification(title, {
     body,
-    data: { alertId, serverTimestamp, clickUrl: "/" },
+    data: { alertId, serverTimestamp, experimentId, clickUrl: "/" },
   });
 
   const deliveredAckPromise =
@@ -125,6 +126,7 @@ self.addEventListener("push", (event) => {
             ackStage: "DELIVERED",
             receivedAtClient: Date.now(),
             serverTimestamp,
+            experimentId,
           }),
         }).catch(() => {})
       : Promise.resolve();
@@ -147,6 +149,7 @@ self.addEventListener("notificationclick", (event) => {
           ackStage: "OPENED",
           receivedAtClient: Date.now(),
           serverTimestamp: noteData.serverTimestamp,
+          experimentId: noteData.experimentId ?? null,
         }),
       }).catch(() => {});
 

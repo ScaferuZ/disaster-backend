@@ -48,6 +48,7 @@ async function postAck(alert, transport) {
       transport,
       receivedAtClient: Date.now(),
       serverTimestamp: alert.serverTimestamp,
+      experimentId: alert.experimentId ?? null,
     }),
   });
 
