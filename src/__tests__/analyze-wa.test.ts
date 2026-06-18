@@ -1,8 +1,47 @@
 import { describe, expect, test } from "bun:test";
 
-import { computePwaLatency } from "../../scripts/analyze-whatsapp-webhooks";
+import { collectAckRows, computePwaLatency, parseAckRow } from "../../scripts/analyze-whatsapp-webhooks";
 
 describe("computePwaLatency", () => {
+	test("parses XRANGE json ack rows and filters by experimentId", () => {
+		const rows = [
+			[
+				"1-0",
+				{
+					json: JSON.stringify({
+						alertId: "alert-a",
+						transport: "SSE",
+						experimentId: "exp-a",
+						receivedAtClient: 1330,
+						serverTimestamp: 1200,
+						ackStage: "DELIVERED",
+					}),
+				},
+			],
+			[
+				"1-1",
+				{
+					json: JSON.stringify({
+						alertId: "alert-b",
+						transport: "SSE",
+						experimentId: "exp-b",
+						receivedAtClient: 1400,
+						serverTimestamp: 1200,
+						ackStage: "DELIVERED",
+					}),
+				},
+			],
+		] as Array<readonly [string, Record<string, string>]>;
+
+		const firstRow = rows[0];
+		expect(firstRow).toBeDefined();
+		const parsed = parseAckRow(firstRow![1]);
+		expect(parsed?.experimentId).toBe("exp-a");
+		expect(parsed?.receivedAtClient).toBe(1330);
+		expect(collectAckRows(rows, "exp-a")).toHaveLength(1);
+		expect(collectAckRows(rows, "exp-a")[0]?.alertId).toBe("alert-a");
+	});
+
 	test("matches PWA trigger and ACK by experimentId and alertId", () => {
 		const triggers = [
 			{

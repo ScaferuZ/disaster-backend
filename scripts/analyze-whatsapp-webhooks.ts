@@ -46,10 +46,10 @@ interface TriggerEvent {
 
 interface AckEvent {
   alertId: string;
-  experimentId?: string;
+  experimentId: string | null;
   channel: "PWA" | "WhatsApp";
-  receivedAtClient: string;
-  serverTimestamp: string;
+  receivedAtClient: string | number;
+  serverTimestamp: string | number;
   ackStage?: string;
 }
 
@@ -254,25 +254,64 @@ async function readAcksFromRedis(
     const rows = Array.isArray(reply) ? reply : [];
     if (rows.length === 0) break;
 
-    for (const item of rows) {
-      const id = String(item[0]);
-      const fields = item[1] as Record<string, string>;
+    acks.push(...collectAckRows(rows as Array<readonly [string, Record<string, string>]>, experimentId));
 
-      if (fields.experimentId === experimentId) {
-        acks.push({
-          alertId: fields.alertId ?? "",
-          experimentId: fields.experimentId ?? experimentId,
-          channel: fields.transport === "WhatsApp" ? "WhatsApp" : "PWA",
-          receivedAtClient: fields.receivedAtClient ?? "",
-          serverTimestamp: fields.serverTimestamp ?? "",
-          ackStage: fields.ackStage ?? "",
-        });
-      }
-
-      start = id;
-    }
+    const lastRow = rows[rows.length - 1];
+    start = String(lastRow?.[0] ?? start);
 
     if (rows.length < 100) break;
+  }
+
+  return acks;
+}
+
+export function parseAckRow(fields: Record<string, string>): AckEvent | null {
+  if (typeof fields.json !== "string") return null;
+
+  try {
+    const parsed = JSON.parse(fields.json) as Partial<{
+      alertId: unknown;
+      experimentId: unknown;
+      transport: unknown;
+      receivedAtClient: unknown;
+      serverTimestamp: unknown;
+      ackStage: unknown;
+    }>;
+
+    if (typeof parsed.alertId !== "string") return null;
+
+    const receivedAtClient =
+      typeof parsed.receivedAtClient === "string" || typeof parsed.receivedAtClient === "number"
+        ? parsed.receivedAtClient
+        : "";
+    const serverTimestamp =
+      typeof parsed.serverTimestamp === "string" || typeof parsed.serverTimestamp === "number"
+        ? parsed.serverTimestamp
+        : "";
+
+    return {
+      alertId: parsed.alertId,
+      experimentId: typeof parsed.experimentId === "string" ? parsed.experimentId : null,
+      channel: parsed.transport === "WhatsApp" ? "WhatsApp" : "PWA",
+      receivedAtClient,
+      serverTimestamp,
+      ackStage: typeof parsed.ackStage === "string" ? parsed.ackStage : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function collectAckRows(
+  rows: Array<readonly [string, Record<string, string>]>,
+  experimentId: string,
+): AckEvent[] {
+  const acks: AckEvent[] = [];
+
+  for (const item of rows) {
+    const fields = item[1];
+    const ack = parseAckRow(fields);
+    if (ack && ack.experimentId === experimentId) acks.push(ack);
   }
 
   return acks;
