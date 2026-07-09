@@ -15,7 +15,11 @@
     "stage6:sample:resources": "bun run scripts/stage6/sample-resources.ts",
     "analyze:comparison": "bun run scripts/analyze-comparison.ts",
     "compare:run": "bun run scripts/run-comparison.ts",
-    "analyze:whatsapp": "bun run scripts/analyze-whatsapp-webhooks.ts"
+    "analyze:whatsapp": "bun run scripts/analyze-whatsapp-webhooks.ts",
+    "n8n:workflow:check": "bun run scripts/deploy-n8n-workflow.ts --check-remote",
+    "n8n:workflow:dry-run": "bun run scripts/deploy-n8n-workflow.ts",
+    "n8n:workflow:push": "bun run scripts/deploy-n8n-workflow.ts --push",
+    "n8n:workflow:push:activate": "bun run scripts/deploy-n8n-workflow.ts --push --activate"
   },
   "devDependencies": {
     "@types/bun": "latest",

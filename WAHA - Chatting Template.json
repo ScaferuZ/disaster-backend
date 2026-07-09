@@ -37,10 +37,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        416,
-        112
+        -2160,
+        -208
       ],
-      "id": "a43ef5e7-7c9a-4908-9801-f56ca869ca36",
+      "id": "2fa5dfd9-e326-46df-92cb-d5338010a641",
       "name": "check-message-and-user",
       "alwaysOutputData": false
     },
@@ -67,17 +67,18 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
-        640,
-        112
+        -1712,
+        -304
       ],
-      "id": "46bfcc3e-3633-44cf-bfa4-409bfc8921f4",
+      "id": "338b13ef-ea23-4078-90da-598964378945",
       "name": "Message a model",
       "credentials": {
         "googlePalmApi": {
           "id": "d0deRLrj7A4l4yID",
           "name": "Google Gemini(PaLM) Api account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -107,10 +108,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1216,
-        112
+        -1136,
+        -208
       ],
-      "id": "a4935520-60ba-4924-9a62-838234535896",
+      "id": "bd7c1276-e171-4ceb-8d4f-57428e3a0938",
       "name": "If"
     },
     {
@@ -120,11 +121,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1008,
-        112
+        -1360,
+        -304
       ],
-      "id": "42260ef6-0b0c-4a2f-8f2d-8193d5feaeb7",
-      "name": "Code in JavaScript"
+      "id": "6f02975b-6d53-4d0a-8dee-28acd58a4776",
+      "name": "Code in JavaScript",
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -156,21 +158,22 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1888,
-        112
+        -464,
+        -208
       ],
-      "id": "0d8fe124-48f0-4efc-b295-149ff3fe0f2f",
-      "name": "HTTP Request"
+      "id": "a83f942b-461a-4778-8342-742ed827cb1b",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {},
-      "id": "c39e16b7-ff3a-47bc-9cc6-bfd77cbfadcf",
+      "id": "97c68700-4091-4b94-a6f3-d5de27cb6f8c",
       "name": "WAHA Trigger",
       "type": "@devlikeapro/n8n-nodes-waha.wahaTrigger",
       "typeVersion": 202409,
       "position": [
-        -32,
-        16
+        -2608,
+        -496
       ],
       "webhookId": "71251449-2644-4325-8ba7-2a1550a81fb4"
     },
@@ -181,13 +184,13 @@
         "participant": "",
         "requestOptions": {}
       },
-      "id": "a0b83907-d0d8-4186-87a6-b6a66ff02de5",
+      "id": "aa07d6e4-d64b-4f91-aa5c-d4b21892067d",
       "name": "Send Seen",
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202409,
       "position": [
-        416,
-        -80
+        -2160,
+        -400
       ],
       "credentials": {
         "wahaApi": {
@@ -203,13 +206,13 @@
         "width": 568.1572184210546,
         "color": 4
       },
-      "id": "18abb38c-e36f-497a-9e30-8ac45f163d39",
+      "id": "4fef1725-c960-4060-911a-bec132b25e94",
       "name": "Sticky Note6",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        192,
-        -144
+        -2400,
+        -464
       ]
     },
     {
@@ -290,13 +293,13 @@
           "allMatchingOutputs": true
         }
       },
-      "id": "11664cd8-5f40-46e9-859e-dc88acc826f8",
+      "id": "62d9027b-8d30-4240-8e0d-ba5f529b0df3",
       "name": "Switch",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
       "position": [
-        192,
-        272
+        -2384,
+        -224
       ],
       "alwaysOutputData": false,
       "onError": "continueRegularOutput"
@@ -311,10 +314,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2336,
-        112
+        208,
+        -112
       ],
-      "id": "58332a31-db3e-4a2d-ab1a-c9eec40cd370",
+      "id": "83c9988a-0c90-4a3f-af24-03ed7229d7c2",
       "name": "Start Typing",
       "credentials": {
         "wahaApi": {
@@ -325,15 +328,15 @@
     },
     {
       "parameters": {
-        "amount": "=5"
+        "amount": "=1"
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2560,
-        112
+        432,
+        -112
       ],
-      "id": "798070c5-8b95-442a-81f7-3f3617d249cb",
+      "id": "36319aff-51df-4145-8db3-3226b0402580",
       "name": "Wait1",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
@@ -348,10 +351,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2784,
-        112
+        656,
+        -112
       ],
-      "id": "34b5e8ef-b84d-4eae-8d2e-56330f279c38",
+      "id": "63eb3a29-cb85-4362-b814-0d63f859b150",
       "name": "Stop Typing",
       "credentials": {
         "wahaApi": {
@@ -367,16 +370,16 @@
         "session": "={{ $('check-message-and-user').item.json.session }}",
         "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
         "reply_to": "={{ $('check-message-and-user').item.json.payload.to }}",
-        "text": "belum euy, tolong inputkan lagi ceunah",
+        "text": "laporan",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        1440,
-        16
+        -912,
+        -304
       ],
-      "id": "4cd3a18b-dc12-493b-b5f9-1c99aef99201",
+      "id": "ef0f48b5-76aa-41c5-9e8d-1120c464695a",
       "name": "Send a text message",
       "credentials": {
         "wahaApi": {
@@ -398,10 +401,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        3008,
-        112
+        880,
+        -112
       ],
-      "id": "b332e180-555b-45f4-a887-db76330adc14",
+      "id": "cc11e918-8853-4934-8e84-ac1722de1e1e",
       "name": "Send a text message1",
       "credentials": {
         "wahaApi": {
@@ -417,10 +420,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2112,
-        112
+        -16,
+        -112
       ],
-      "id": "3760f83d-348b-48f6-949e-4f1f495569cd",
+      "id": "8836fa88-62ca-4f69-8b07-5d17314b6faa",
       "name": "Code in JavaScript1"
     },
     {
@@ -451,10 +454,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1440,
-        208
+        -912,
+        -112
       ],
-      "id": "827a8696-86f4-425d-a4f3-a8f5306b90a1",
+      "id": "937f71d4-435d-4616-a2b6-6448db50f678",
       "name": "If1"
     },
     {
@@ -468,10 +471,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2144,
-        304
+        -240,
+        80
       ],
-      "id": "76f2e67e-05b5-4e63-93c9-50e2ee0a7db9",
+      "id": "5a8c3627-ea69-46c8-bdbf-be2193dbb92b",
       "name": "Start Typing1",
       "credentials": {
         "wahaApi": {
@@ -482,15 +485,15 @@
     },
     {
       "parameters": {
-        "amount": "=5"
+        "amount": "=1"
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2336,
-        304
+        -16,
+        80
       ],
-      "id": "a51e4d13-7e5b-4a7e-978f-6af175db9f26",
+      "id": "9cd0ab26-6a8e-40ed-8928-e89a66ecfb57",
       "name": "Wait",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
@@ -505,10 +508,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2560,
-        304
+        208,
+        80
       ],
-      "id": "d18214bf-f816-4faf-8664-1846e08cab6e",
+      "id": "ed758530-bd07-40ef-9a51-846fad5e4548",
       "name": "Stop Typing1",
       "credentials": {
         "wahaApi": {
@@ -530,10 +533,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2784,
-        304
+        432,
+        80
       ],
-      "id": "97938186-206d-46f6-ae1b-be60e114ba47",
+      "id": "9a9969ba-4a43-4cae-9ee0-668eab39c990",
       "name": "Send a text message2",
       "credentials": {
         "wahaApi": {
@@ -549,10 +552,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1664,
-        304
+        -688,
+        80
       ],
-      "id": "3ea32158-7477-4bae-a2d1-7a8c208930bb",
+      "id": "1af1680f-8b68-4609-9a4c-c834ce8fcb8f",
       "name": "Code in JavaScript2"
     },
     {
@@ -638,10 +641,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1888,
-        304
+        -464,
+        80
       ],
-      "id": "e7f50a28-6204-4cec-a3e6-6e88a6571979",
+      "id": "a29caad2-a2bb-42de-aa34-a055da13b943",
       "name": "Insert row"
     },
     {
@@ -651,10 +654,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        416,
-        592
+        -2160,
+        464
       ],
-      "id": "de97e365-636b-49f5-af7b-79ecbba1f98b",
+      "id": "df25c05b-df5c-4f8a-9941-ad44352b409b",
       "name": "Code in JavaScript3"
     },
     {
@@ -680,10 +683,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        704,
-        592
+        -1936,
+        464
       ],
-      "id": "0f69713b-1e6b-42e1-b6cc-af8d582162de",
+      "id": "4a2bd139-5ca6-4184-9164-c630262ac4d2",
       "name": "Get row(s)"
     },
     {
@@ -714,10 +717,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1440,
-        496
+        -1136,
+        368
       ],
-      "id": "8cc4a0ce-4653-444f-8c41-930346e84ff2",
+      "id": "f63d4bf0-d653-4a76-bd0c-9507ce6fa17e",
       "name": "If2"
     },
     {
@@ -727,10 +730,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1664,
-        496
+        -912,
+        368
       ],
-      "id": "e57b1a57-7a57-4aeb-a817-20bf6f1f8b70",
+      "id": "82fe8495-e99b-40cf-9549-eb15458763f6",
       "name": "Code in JavaScript4"
     },
     {
@@ -760,10 +763,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        3120,
-        480
+        880,
+        464
       ],
-      "id": "6f4ca4d3-1254-40ae-9e36-525620d30a15",
+      "id": "e65f94d3-b28d-4fd2-a43e-92eb706125d0",
       "name": "Delete row(s)"
     },
     {
@@ -773,10 +776,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        992,
-        592
+        -1648,
+        464
       ],
-      "id": "85cfa8a7-f883-46ca-9970-a55d2f2f6546",
+      "id": "d3b6a6d3-a563-4381-9a40-96062567404e",
       "name": "Code in JavaScript6"
     },
     {
@@ -807,10 +810,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1216,
-        592
+        -1360,
+        464
       ],
-      "id": "b52a673f-e48f-4d1b-8185-dfc4a7f9b20f",
+      "id": "dae49395-e1db-4540-a60e-a7cb7aa8c3aa",
       "name": "If3"
     },
     {
@@ -824,10 +827,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        1440,
-        688
+        -1136,
+        560
       ],
-      "id": "b35e2f5f-1763-4a78-9553-6b2dac3ab595",
+      "id": "e7e4c141-f303-4849-a234-1a4a5c0e21e2",
       "name": "Start Typing2",
       "credentials": {
         "wahaApi": {
@@ -838,15 +841,15 @@
     },
     {
       "parameters": {
-        "amount": "=5"
+        "amount": "=1"
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1664,
-        688
+        -912,
+        560
       ],
-      "id": "2f64eed8-487a-4fd7-a2d9-ae27fcbc0e77",
+      "id": "6968e1b1-c80c-4652-b77e-b04d35e5cae0",
       "name": "Wait2",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
@@ -861,10 +864,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        1888,
-        688
+        -688,
+        560
       ],
-      "id": "6e45606b-2ca6-4db4-b687-1fa76ff94425",
+      "id": "c7a608a1-06ac-4cc6-8620-a905d98fa22e",
       "name": "Stop Typing2",
       "credentials": {
         "wahaApi": {
@@ -886,10 +889,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2112,
-        688
+        -464,
+        560
       ],
-      "id": "c44ccaea-e691-4045-9f82-e0abf12edcf6",
+      "id": "b7329d4e-5721-43b8-889c-2a924eae12b4",
       "name": "Send a text message3",
       "credentials": {
         "wahaApi": {
@@ -905,10 +908,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1664,
-        112
+        -688,
+        -208
       ],
-      "id": "aeaee1a4-1425-4eee-87f7-596c0f36d8e3",
+      "id": "48601313-105e-4dfd-b3e1-929078b6f100",
       "name": "Code in JavaScript8"
     },
     {
@@ -941,11 +944,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1888,
-        496
+        -688,
+        368
       ],
-      "id": "01e3cbf4-a526-4e4f-a40b-203796121e6d",
-      "name": "HTTP Request1"
+      "id": "43abf56c-4805-4322-a5c1-99e7361a1e20",
+      "name": "HTTP Request1",
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -954,10 +958,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2112,
-        496
+        -240,
+        464
       ],
-      "id": "edaf1738-6c87-4823-af63-8d7088e6c3ff",
+      "id": "cae0025f-684d-4729-853d-24a4c86aaad0",
       "name": "Code in JavaScript7"
     },
     {
@@ -970,10 +974,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2336,
-        496
+        -16,
+        464
       ],
-      "id": "397ed07b-9756-4455-88b6-2f92994f91a0",
+      "id": "c16878bd-8b64-4c0a-9858-385030a21d5b",
       "name": "Start Typing3",
       "credentials": {
         "wahaApi": {
@@ -984,15 +988,15 @@
     },
     {
       "parameters": {
-        "amount": "=5"
+        "amount": "=1"
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2544,
-        496
+        208,
+        464
       ],
-      "id": "730b4193-ea3e-414b-82b4-e23ec736a973",
+      "id": "93102b8c-cd5b-4de9-9df1-64511ef6b0b0",
       "name": "Wait3",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
@@ -1009,10 +1013,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2944,
-        496
+        656,
+        464
       ],
-      "id": "d638cb22-7417-40bf-883b-55c2b2dc28fa",
+      "id": "3cc62a5e-041b-47f4-b068-05036a42a5fb",
       "name": "Send a text message4",
       "credentials": {
         "wahaApi": {
@@ -1032,10 +1036,10 @@
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
       "position": [
-        2752,
-        496
+        432,
+        464
       ],
-      "id": "ad409de4-8b11-444a-9d12-e6c971f159e2",
+      "id": "0494cf53-02b6-4858-9960-25a445b3ceb9",
       "name": "Stop Typing3",
       "credentials": {
         "wahaApi": {
@@ -1071,10 +1075,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        480,
-        304
+        -1936,
+        -208
       ],
-      "id": "47874979-547c-4fe8-ac49-4ac99ec84fac",
+      "id": "9eb1ded8-c439-4d2b-a75c-c63d0c12db2b",
       "name": "If4"
     },
     {
@@ -1084,10 +1088,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        752,
-        352
+        -1360,
+        80
       ],
-      "id": "156bf87f-fc20-4cce-827a-0b85c3b97988",
+      "id": "0182de15-7d7f-405f-8b1d-e03a1caa285e",
       "name": "Code in JavaScript5"
     },
     {
@@ -1116,8 +1120,11 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [2080, 112],
-      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "position": [
+        -240,
+        -208
+      ],
+      "id": "4942b8d4-7aaf-4c01-b28f-3d9e68bf24f7",
       "name": "If queued"
     },
     {
@@ -1132,8 +1139,11 @@
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
-      "position": [2300, -20],
-      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "position": [
+        -16,
+        -304
+      ],
+      "id": "6ff0c970-94d2-4b72-9d29-4f0a7b1e97e6",
       "name": "Send queued ack",
       "credentials": {
         "wahaApi": {
@@ -1168,8 +1178,11 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [2080, 496],
-      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "position": [
+        -464,
+        368
+      ],
+      "id": "e230837f-4029-4cb1-a422-a776c9930dd9",
       "name": "If queued1"
     },
     {
@@ -1184,9 +1197,206 @@
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
       "typeVersion": 202502,
-      "position": [2300, 400],
-      "id": "a1b2c3d4-0002-0002-0002-000000000003",
+      "position": [
+        -240,
+        272
+      ],
+      "id": "b879df60-1eaf-44e4-b529-09161d6b1436",
       "name": "Send queued ack1",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $input.first().json;\nconst payload = incoming.payload || {};\nconst body = typeof payload.body === 'string' ? payload.body : '';\nconst text = body.trim();\nconst isPanduan = payload.fromMe === false && /^!panduan(\\s|$)/i.test(text);\n\nreturn [\n  {\n    json: {\n      route: isPanduan ? 'panduan' : 'ignore',\n      chatId: payload.from || '',\n      messageId: payload.id || '',\n      session: incoming.session,\n      text,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1936,
+        880
+      ],
+      "id": "d7df119d-b552-40ca-a67c-4812e896d276",
+      "name": "Assistant - Route !panduan"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "594d60cc-f3ef-462b-83cd-1bfc186dd153",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "panduan",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1712,
+        880
+      ],
+      "id": "873e8542-d556-41c8-8d7b-0a293fe59ff2",
+      "name": "Assistant - Is !panduan"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -1488,
+        880
+      ],
+      "id": "c99a4749-a656-4784-be1a-1d1efb1c9a0d",
+      "name": "Assistant - Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=1"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1264,
+        880
+      ],
+      "id": "6d6ed152-bf5a-4de8-b54f-eaaaaa6f22f4",
+      "name": "Assistant - Wait 1s",
+      "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -1040,
+        880
+      ],
+      "id": "d3b76647-8341-4080-8912-8dde6eb39b8f",
+      "name": "Assistant - Stop Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
+        "reply_to": "={{ $('Assistant - Route !panduan').item.json.messageId }}",
+        "text": "🌊 Panduan Samudra Bot\n\nPerintah yang tersedia:\n• !lapor <pengamatan> — kirim laporan tanda alam atau kondisi laut/cuaca. Contoh: !lapor awan hitam berkumpul di laut\n• !panduan — tampilkan panduan ini lagi.\n\nJika bot meminta lokasi setelah laporan, kirim lokasi Anda melalui fitur WhatsApp Share Location.\n\nBot ini hanya menangani laporan laut/cuaca dan panduan keselamatan terkait.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -816,
+        880
+      ],
+      "id": "39c0cbd5-ccd1-4330-ab93-b01e13dacb42",
+      "name": "Assistant - Send Panduan",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').item.json.payload.id }}",
+        "text": "✅ Laporan diterima. Mohon tunggu sebentar, laporan sedang diproses.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -1936,
+        -560
+      ],
+      "id": "0e7720de-c79b-47a5-8c28-86a2e8c887bc",
+      "name": "Send !lapor feedback",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('check-message-and-user').first().json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        -560
+      ],
+      "id": "f2d2bc81-e913-4806-9737-6651e3e9791e",
+      "name": "Restore !lapor input"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('check-message-and-user').item.json.session }}",
+        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').item.json.payload.id }}",
+        "text": "⚠️ Maaf, laporan belum berhasil diproses. Silakan coba kirim ulang dengan format: !lapor <tanda alam yang terlihat>",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -912,
+        -640
+      ],
+      "id": "81dd4fba-2d35-4748-bc6c-05b2803efb0f",
+      "name": "Send !lapor error fallback",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -1201,7 +1411,14 @@
       "main": [
         [
           {
-            "node": "If4",
+            "node": "Send !lapor feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assistant - Route !panduan",
             "type": "main",
             "index": 0
           }
@@ -1213,6 +1430,13 @@
         [
           {
             "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send !lapor error fallback",
             "type": "main",
             "index": 0
           }
@@ -1245,6 +1469,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Send !lapor error fallback",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -1253,6 +1484,13 @@
         [
           {
             "node": "If queued",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send !lapor error fallback",
             "type": "main",
             "index": 0
           }
@@ -1286,8 +1524,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "Switch": {
@@ -1476,11 +1713,6 @@
         ]
       ]
     },
-    "Send a text message1": {
-      "main": [
-        []
-      ]
-    },
     "Code in JavaScript6": {
       "main": [
         [
@@ -1559,6 +1791,13 @@
         [
           {
             "node": "If queued1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send !lapor error fallback",
             "type": "main",
             "index": 0
           }
@@ -1666,13 +1905,90 @@
           }
         ]
       ]
+    },
+    "Assistant - Route !panduan": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Is !panduan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Is !panduan": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Start Typing": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Wait 1s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Wait 1s": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Stop Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Stop Typing": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Send Panduan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send !lapor feedback": {
+      "main": [
+        [
+          {
+            "node": "Restore !lapor input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore !lapor input": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f084a25c-7912-464f-b425-56b3f7ee6eb2",
+  "versionId": "f44d6d66-a8bf-4a52-b7e5-19117afe112a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "bf1c678566c6708fb6e13440408012aca4ce4aa9432332b6ded9194e33e873fa"
