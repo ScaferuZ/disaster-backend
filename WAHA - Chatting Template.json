@@ -1,5 +1,5 @@
 {
-  "name": "WAHA - Chatting Template",
+  "name": "staging",
   "nodes": [
     {
       "parameters": {
@@ -48,9 +48,9 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemma-4-31b-it",
+          "value": "models/gemini-3.1-flash-lite",
           "mode": "list",
-          "cachedResultName": "models/gemma-4-31b-it"
+          "cachedResultName": "models/gemini-3.1-flash-lite"
         },
         "messages": {
           "values": [
@@ -162,7 +162,7 @@
         -208
       ],
       "id": "a83f942b-461a-4778-8342-742ed827cb1b",
-      "name": "HTTP Request",
+      "name": "Submit shore-location report",
       "onError": "continueErrorOutput"
     },
     {
@@ -318,7 +318,7 @@
         -112
       ],
       "id": "83c9988a-0c90-4a3f-af24-03ed7229d7c2",
-      "name": "Start Typing",
+      "name": "Start typing shore alert",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -337,15 +337,15 @@
         -112
       ],
       "id": "36319aff-51df-4145-8db3-3226b0402580",
-      "name": "Wait1",
+      "name": "Wait before shore alert",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Stop Typing",
-        "session": "={{ $('Code in JavaScript1').item.json.session }}",
-        "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
+        "session": "={{ $('Build shore-location alert broadcasts').item.json.session }}",
+        "chatId": "={{ $('Build shore-location alert broadcasts').item.json.chatId }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -355,7 +355,7 @@
         -112
       ],
       "id": "63eb3a29-cb85-4362-b814-0d63f859b150",
-      "name": "Stop Typing",
+      "name": "Stop typing shore alert",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -370,7 +370,7 @@
         "session": "={{ $('check-message-and-user').item.json.session }}",
         "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
         "reply_to": "={{ $('check-message-and-user').item.json.payload.to }}",
-        "text": "laporan",
+        "text": "Laporan masih belum jelas, tolong kirim lagi dengan tanda alam yang terlihat. Contoh: !lapor awan hitam tebal terlihat dari pantai",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -392,10 +392,10 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('Code in JavaScript1').item.json.session }}",
-        "chatId": "={{ $('Code in JavaScript1').item.json.chatId }}",
-        "reply_to": "={{ $('Code in JavaScript1').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript1').item.json.locationText }}\n\n{{ $('Code in JavaScript1').item.json.text }} \n\nMohon berhati-hati saat melaut.",
+        "session": "={{ $('Build shore-location alert broadcasts').item.json.session }}",
+        "chatId": "={{ $('Build shore-location alert broadcasts').item.json.chatId }}",
+        "reply_to": "={{ $('Build shore-location alert broadcasts').item.json.chatId }}",
+        "text": "=⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build shore-location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build shore-location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -405,7 +405,7 @@
         -112
       ],
       "id": "cc11e918-8853-4934-8e84-ac1722de1e1e",
-      "name": "Send a text message1",
+      "name": "Send shore alert broadcast",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -415,7 +415,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = $('Code in JavaScript8').first().json.locationText || \"Lokasi tidak diketahui\";\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\nconst reportContext = $('Build shore-location report payload').first().json;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\nconst locationText = reportContext.locationText || \"Lokasi tidak diketahui\";\nconst reporterWhatsapp = reportContext.reporterWhatsapp || 'tidak diketahui';\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    reporterWhatsapp,\n    sourceGroup,\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -424,7 +424,7 @@
         -112
       ],
       "id": "8836fa88-62ca-4f69-8b07-5d17314b6faa",
-      "name": "Code in JavaScript1"
+      "name": "Build shore-location alert broadcasts"
     },
     {
       "parameters": {
@@ -458,14 +458,14 @@
         -112
       ],
       "id": "937f71d4-435d-4616-a2b6-6448db50f678",
-      "name": "If1"
+      "name": "Does !lapor need shared location?"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Start Typing",
-        "session": "={{ $('check-message-and-user').item.json.session }}",
-        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "session": "={{ $('check-message-and-user').first().json.session }}",
+        "chatId": "={{ $('check-message-and-user').first().json.payload.from }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -475,7 +475,7 @@
         80
       ],
       "id": "5a8c3627-ea69-46c8-bdbf-be2193dbb92b",
-      "name": "Start Typing1",
+      "name": "Start typing location request",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -494,15 +494,15 @@
         80
       ],
       "id": "9cd0ab26-6a8e-40ed-8928-e89a66ecfb57",
-      "name": "Wait",
+      "name": "Wait before location request",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Stop Typing",
-        "session": "={{ $('check-message-and-user').item.json.session }}",
-        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
+        "session": "={{ $('check-message-and-user').first().json.session }}",
+        "chatId": "={{ $('check-message-and-user').first().json.payload.from }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -512,7 +512,7 @@
         80
       ],
       "id": "ed758530-bd07-40ef-9a51-846fad5e4548",
-      "name": "Stop Typing1",
+      "name": "Stop typing location request",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -524,9 +524,9 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('check-message-and-user').item.json.session }}",
-        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
-        "reply_to": "=",
+        "session": "={{ $('check-message-and-user').first().json.session }}",
+        "chatId": "={{ $('check-message-and-user').first().json.payload.from }}",
+        "reply_to": "={{ $('check-message-and-user').first().json.payload.id }}",
         "text": "=📍 Lokasi belum diketahui.\n\nJika Anda berada di laut, mohon kirim lokasi Anda menggunakan fitur \"Share Location\" dalam 5 menit.",
         "requestOptions": {}
       },
@@ -537,7 +537,7 @@
         80
       ],
       "id": "9a9969ba-4a43-4cae-9ee0-668eab39c990",
-      "name": "Send a text message2",
+      "name": "Ask reporter to share location",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -556,7 +556,54 @@
         80
       ],
       "id": "1af1680f-8b68-4609-9a4c-c834ce8fcb8f",
-      "name": "Code in JavaScript2"
+      "name": "Build pending location row"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "eXPp33vISFsumV9O",
+          "mode": "list",
+          "cachedResultName": "nelayan_report",
+          "cachedResultUrl": "/projects/r1cvwWNEjvWrgHwd/datatables/eXPp33vISFsumV9O"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reporterId",
+              "keyValue": "={{ $json.reporterId }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "waiting_location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        80
+      ],
+      "id": "55c7c671-44e2-42a1-af17-07b7813b236d",
+      "name": "Clear prior pending-location rows",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Build pending location row').first().json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -584,
+        80
+      ],
+      "id": "37eabe66-1ab0-4d84-8551-22d394abe998",
+      "name": "Restore pending row after cleanup"
     },
     {
       "parameters": {
@@ -645,11 +692,11 @@
         80
       ],
       "id": "a29caad2-a2bb-42de-aa34-a055da13b943",
-      "name": "Insert row"
+      "name": "Store pending location row"
     },
     {
       "parameters": {
-        "jsCode": "const payload = $input.first().json.payload;\n\nconst reporterId = payload.participant;\nconst sourceGroup = payload.from;\nconst session = $input.first().json.session;\n\nconst latitude =\n  payload.location?.latitude ??\n  payload._data?.message?.locationMessage?.degreesLatitude ??\n  null;\n\nconst longitude =\n  payload.location?.longitude ??\n  payload._data?.message?.locationMessage?.degreesLongitude ??\n  null;\n\nreturn [\n  {\n    json: {\n      reporterId,\n      sourceGroup,\n      session,\n      latitude: latitude !== null ? Number(latitude) : null,\n      longitude: longitude !== null ? Number(longitude) : null\n    }\n  }\n];"
+        "jsCode": "function reporterWhatsappFromPayload(payload) {\n  const raw =\n    payload?._data?.key?.participantAlt ||\n    payload?._data?.participantAlt ||\n    payload?.participantAlt ||\n    payload?.participant ||\n    '';\n  const value = String(raw).replace(/@s\\.whatsapp\\.net$|@c\\.us$|@lid$/i, '');\n  if (!value) return 'tidak diketahui';\n  return /^\\d+$/.test(value) ? '+' + value : value;\n}\n\nconst payload = $input.first().json.payload;\n\nconst reporterId = payload.participant;\nconst reporterWhatsapp = reporterWhatsappFromPayload(payload);\nconst sourceGroup = payload.from;\nconst session = $input.first().json.session;\nconst messageId = payload.id;\n\nconst latitude =\n  payload.location?.latitude ??\n  payload._data?.message?.locationMessage?.degreesLatitude ??\n  null;\n\nconst longitude =\n  payload.location?.longitude ??\n  payload._data?.message?.locationMessage?.degreesLongitude ??\n  null;\n\nreturn [\n  {\n    json: {\n      reporterId,\n      reporterWhatsapp,\n      sourceGroup,\n      session,\n      messageId,\n      latitude: latitude !== null ? Number(latitude) : null,\n      longitude: longitude !== null ? Number(longitude) : null\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -658,7 +705,7 @@
         464
       ],
       "id": "df25c05b-df5c-4f8a-9941-ad44352b409b",
-      "name": "Code in JavaScript3"
+      "name": "Extract shared location"
     },
     {
       "parameters": {
@@ -687,7 +734,7 @@
         464
       ],
       "id": "4a2bd139-5ca6-4184-9164-c630262ac4d2",
-      "name": "Get row(s)"
+      "name": "Get pending location row"
     },
     {
       "parameters": {
@@ -721,11 +768,11 @@
         368
       ],
       "id": "f63d4bf0-d653-4a76-bd0c-9507ce6fa17e",
-      "name": "If2"
+      "name": "Has pending location row?"
     },
     {
       "parameters": {
-        "jsCode": "const latitude = $('Code in JavaScript3').first().json.latitude;\nconst longitude = $('Code in JavaScript3').first().json.longitude;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nlet locationText;\n\nif (latitude && longitude) {\n  locationText = `${latitude}, ${longitude}`;\n} else {\n  locationText = beachMap[$input.first().json.sourceGroup] || \"unknown_beach\";\n}\n\nreturn [\n  {\n    json: {\n      reporterId: $input.first().json.reporterId,\n      sourceGroup: $input.first().json.sourceGroup,\n      session: $input.first().json.session,\n      lik_codes: [$input.first().json.lik_codes],\n      latitude,\n      longitude,\n      originalText: $input.first().json.originalText,\n      beach_location: beachMap[$input.first().json.sourceGroup] || \"unknown_beach\",\n      locationText\n    }\n  }\n];"
+        "jsCode": "const sharedLocation = $('Extract shared location').first().json;\nconst latitude = sharedLocation.latitude;\nconst longitude = sharedLocation.longitude;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nconst beachLabelMap = {\n  \"120363406629965480@g.us\": \"Pantai Lampuuk\",\n  \"120363425830719164@g.us\": \"Pantai Lhoknga\"\n};\n\nlet locationText;\n\nif (latitude && longitude) {\n  locationText = String(latitude) + \", \" + String(longitude);\n} else {\n  locationText = beachLabelMap[$input.first().json.sourceGroup] || \"Lokasi tidak diketahui\";\n}\n\nreturn [\n  {\n    json: {\n      reporterId: $input.first().json.reporterId,\n      reporterWhatsapp: sharedLocation.reporterWhatsapp || 'tidak diketahui',\n      sourceGroup: $input.first().json.sourceGroup,\n      session: $input.first().json.session,\n      lik_codes: [$input.first().json.lik_codes],\n      latitude,\n      longitude,\n      originalText: $input.first().json.originalText,\n      beach_location: beachMap[$input.first().json.sourceGroup] || \"unknown_beach\",\n      locationText\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -734,7 +781,7 @@
         368
       ],
       "id": "82fe8495-e99b-40cf-9549-eb15458763f6",
-      "name": "Code in JavaScript4"
+      "name": "Merge pending report with location"
     },
     {
       "parameters": {
@@ -750,7 +797,7 @@
           "conditions": [
             {
               "keyName": "reporterId",
-              "keyValue": "={{ $('Switch').item.json.payload.participant }}"
+              "keyValue": "={{ $('Extract shared location').first().json.reporterId }}"
             },
             {
               "keyName": "status",
@@ -767,7 +814,7 @@
         464
       ],
       "id": "e65f94d3-b28d-4fd2-a43e-92eb706125d0",
-      "name": "Delete row(s)"
+      "name": "Delete completed pending-location rows"
     },
     {
       "parameters": {
@@ -780,7 +827,7 @@
         464
       ],
       "id": "d3b6a6d3-a563-4381-9a40-96062567404e",
-      "name": "Code in JavaScript6"
+      "name": "Check pending location expiry"
     },
     {
       "parameters": {
@@ -814,14 +861,14 @@
         464
       ],
       "id": "dae49395-e1db-4540-a60e-a7cb7aa8c3aa",
-      "name": "If3"
+      "name": "Is pending location expired?"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Start Typing",
-        "session": "={{ $('Switch').item.json.session }}",
-        "chatId": "={{ $('Switch').item.json.payload.from }}",
+        "session": "={{ $('Extract shared location').first().json.session }}",
+        "chatId": "={{ $('Extract shared location').first().json.sourceGroup }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -831,7 +878,7 @@
         560
       ],
       "id": "e7e4c141-f303-4849-a234-1a4a5c0e21e2",
-      "name": "Start Typing2",
+      "name": "Start typing expired notice",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -850,15 +897,15 @@
         560
       ],
       "id": "6968e1b1-c80c-4652-b77e-b04d35e5cae0",
-      "name": "Wait2",
+      "name": "Wait before expired notice",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Stop Typing",
-        "session": "={{ $('Switch').item.json.session }}",
-        "chatId": "={{ $('Switch').item.json.payload.from }}",
+        "session": "={{ $('Extract shared location').first().json.session }}",
+        "chatId": "={{ $('Extract shared location').first().json.sourceGroup }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -868,7 +915,7 @@
         560
       ],
       "id": "c7a608a1-06ac-4cc6-8620-a905d98fa22e",
-      "name": "Stop Typing2",
+      "name": "Stop typing expired notice",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -880,9 +927,9 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('Switch').item.json.session }}",
-        "chatId": "={{ $('Switch').item.json.payload.from }}",
-        "reply_to": "={{ $('Switch').item.json.payload.to }}",
+        "session": "={{ $('Extract shared location').first().json.session }}",
+        "chatId": "={{ $('Extract shared location').first().json.sourceGroup }}",
+        "reply_to": "={{ $('Extract shared location').first().json.messageId }}",
         "text": "Laporan sebelumnya sudah kedaluwarsa. Silakan kirim !lapor lagi.",
         "requestOptions": {}
       },
@@ -893,7 +940,7 @@
         560
       ],
       "id": "b7329d4e-5721-43b8-889c-2a924eae12b4",
-      "name": "Send a text message3",
+      "name": "Send expired pending-location notice",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -903,7 +950,40 @@
     },
     {
       "parameters": {
-        "jsCode": "const trigger = $('check-message-and-user').first().json;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nconst sourceGroup = trigger.payload.from;\nconst session = trigger.session;\nconst beach_location = beachMap[sourceGroup] || \"unknown_beach\";\n\nreturn [\n  {\n    json: {\n      lik_codes: $input.first().json.lik_codes,\n      sourceGroup,\n      session,\n      beach_location,\n      locationText: beach_location,\n      reporterId: trigger.payload.participant\n    }\n  }\n];"
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "eXPp33vISFsumV9O",
+          "mode": "list",
+          "cachedResultName": "nelayan_report",
+          "cachedResultUrl": "/projects/r1cvwWNEjvWrgHwd/datatables/eXPp33vISFsumV9O"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reporterId",
+              "keyValue": "={{ $('Check pending location expiry').item.json.reporterId }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "waiting_location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        640
+      ],
+      "id": "3de526cb-c5ff-4db0-806e-f73aa526e82c",
+      "name": "Delete expired pending-location rows"
+    },
+    {
+      "parameters": {
+        "jsCode": "function reporterWhatsappFromPayload(payload) {\n  const raw =\n    payload?._data?.key?.participantAlt ||\n    payload?._data?.participantAlt ||\n    payload?.participantAlt ||\n    payload?.participant ||\n    '';\n  const value = String(raw).replace(/@s\\.whatsapp\\.net$|@c\\.us$|@lid$/i, '');\n  if (!value) return 'tidak diketahui';\n  return /^\\d+$/.test(value) ? '+' + value : value;\n}\n\nconst trigger = $('check-message-and-user').first().json;\n\nconst beachMap = {\n  \"120363406629965480@g.us\": \"pantai_lampuuk\",\n  \"120363425830719164@g.us\": \"pantai_lhoknga\"\n};\n\nconst beachLabelMap = {\n  \"120363406629965480@g.us\": \"Pantai Lampuuk\",\n  \"120363425830719164@g.us\": \"Pantai Lhoknga\"\n};\n\nconst sourceGroup = trigger.payload.from;\nconst session = trigger.session;\nconst beach_location = beachMap[sourceGroup] || \"unknown_beach\";\n\nreturn [\n  {\n    json: {\n      lik_codes: $input.first().json.lik_codes,\n      sourceGroup,\n      session,\n      beach_location,\n      locationText: beachLabelMap[sourceGroup] || \"Lokasi tidak diketahui\",\n      reporterId: trigger.payload.participant,\n      reporterWhatsapp: reporterWhatsappFromPayload(trigger.payload)\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -912,7 +992,7 @@
         -208
       ],
       "id": "48601313-105e-4dfd-b3e1-929078b6f100",
-      "name": "Code in JavaScript8"
+      "name": "Build shore-location report payload"
     },
     {
       "parameters": {
@@ -935,7 +1015,7 @@
             },
             {
               "name": "_experimentId",
-              "value": "=={{ $('check-message-and-user').first().json.payload.body.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
+              "value": "=={{ $json.originalText.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
             }
           ]
         },
@@ -948,12 +1028,12 @@
         368
       ],
       "id": "43abf56c-4805-4322-a5c1-99e7361a1e20",
-      "name": "HTTP Request1",
+      "name": "Submit location-completed report",
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\n// location text coming from previous node\n  const locationText = `https://maps.google.com/?q=${$('Code in JavaScript4').first().json.latitude},${$('Code in JavaScript4').first().json.longitude}` || \"Lokasi tidak diketahui\";\n\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    sourceGroup,\n  }\n}));"
+        "jsCode": "const sourceGroup = $('Switch').first().json.payload.from;\nconst session = $('Switch').first().json.session;\nconst reportContext = $('Merge pending report with location').first().json;\n\n// backend description\nconst text =\n  $input.first().json.alertEvent?.ml?.sign_description ||\n  $input.first().json.message ||\n  'Peringatan terdeteksi.';\n\nconst hasCoordinates = reportContext.latitude !== null && reportContext.latitude !== undefined && reportContext.longitude !== null && reportContext.longitude !== undefined;\nconst locationText = hasCoordinates\n  ? 'https://maps.google.com/?q=' + reportContext.latitude + ',' + reportContext.longitude\n  : (reportContext.locationText || 'Lokasi tidak diketahui');\nconst reporterWhatsapp = reportContext.reporterWhatsapp || 'tidak diketahui';\n\nconst GROUPS = {\n  lampuk: '120363406629965480@g.us',\n  lhoknga: '120363425830719164@g.us',\n};\n\nlet targets = [];\n\nif (sourceGroup === GROUPS.lampuk) {\n  targets = [GROUPS.lampuk, GROUPS.lhoknga];\n} else if (sourceGroup === GROUPS.lhoknga) {\n  targets = [GROUPS.lhoknga, GROUPS.lampuk];\n} else {\n  targets = [sourceGroup];\n}\n\nreturn targets.map(chatId => ({\n  json: {\n    session,\n    chatId,\n    text,\n    locationText,\n    reporterWhatsapp,\n    sourceGroup,\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -962,7 +1042,7 @@
         464
       ],
       "id": "cae0025f-684d-4729-853d-24a4c86aaad0",
-      "name": "Code in JavaScript7"
+      "name": "Build location alert broadcasts"
     },
     {
       "parameters": {
@@ -978,7 +1058,7 @@
         464
       ],
       "id": "c16878bd-8b64-4c0a-9858-385030a21d5b",
-      "name": "Start Typing3",
+      "name": "Start typing location alert",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -997,17 +1077,17 @@
         464
       ],
       "id": "93102b8c-cd5b-4de9-9df1-64511ef6b0b0",
-      "name": "Wait3",
+      "name": "Wait before location alert",
       "webhookId": "3d11609e-067b-43ad-a1a7-b95e35130990"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('Code in JavaScript7').item.json.session }}",
-        "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
-        "reply_to": "={{ $('Code in JavaScript7').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nTanda alam terdeteksi:\n{{ $('HTTP Request1').item.json.alertEvent.ml.action_recommendation }}\n\nLokasi Laporan:\n{{ $('Code in JavaScript7').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "session": "={{ $('Build location alert broadcasts').item.json.session }}",
+        "chatId": "={{ $('Build location alert broadcasts').item.json.chatId }}",
+        "reply_to": "={{ $('Build location alert broadcasts').item.json.chatId }}",
+        "text": "=⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1017,7 +1097,7 @@
         464
       ],
       "id": "3cc62a5e-041b-47f4-b068-05036a42a5fb",
-      "name": "Send a text message4",
+      "name": "Send location alert broadcast",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -1029,8 +1109,8 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Stop Typing",
-        "session": "={{ $('Code in JavaScript7').item.json.session }}",
-        "chatId": "={{ $('Code in JavaScript7').item.json.chatId }}",
+        "session": "={{ $('Build location alert broadcasts').item.json.session }}",
+        "chatId": "={{ $('Build location alert broadcasts').item.json.chatId }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1040,7 +1120,7 @@
         464
       ],
       "id": "0494cf53-02b6-4858-9960-25a445b3ceb9",
-      "name": "Stop Typing3",
+      "name": "Stop typing location alert",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -1183,15 +1263,15 @@
         368
       ],
       "id": "e230837f-4029-4cb1-a422-a776c9930dd9",
-      "name": "If queued1"
+      "name": "Is location-completed report queued?"
     },
     {
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('check-message-and-user').item.json.session }}",
-        "chatId": "={{ $('check-message-and-user').item.json.payload.from }}",
-        "reply_to": "={{ $('check-message-and-user').item.json.payload.id }}",
+        "session": "={{ $('Extract shared location').first().json.session }}",
+        "chatId": "={{ $('Extract shared location').first().json.sourceGroup }}",
+        "reply_to": "={{ $('Extract shared location').first().json.messageId }}",
         "text": "✅ Laporan diterima. Kami sedang memantau kondisi cuaca di area Anda.",
         "requestOptions": {}
       },
@@ -1202,7 +1282,7 @@
         272
       ],
       "id": "b879df60-1eaf-44e4-b529-09161d6b1436",
-      "name": "Send queued ack1",
+      "name": "Send location-completed queued ack",
       "credentials": {
         "wahaApi": {
           "id": "DVnL2b7Bf4ZnTmUb",
@@ -1260,8 +1340,8 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Start Typing",
-        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
-        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
+        "session": "={{ $('Assistant - Route !panduan').first().json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').first().json.chatId }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1297,8 +1377,8 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Stop Typing",
-        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
-        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
+        "session": "={{ $('Assistant - Route !panduan').first().json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').first().json.chatId }}",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1320,10 +1400,10 @@
       "parameters": {
         "resource": "Chatting",
         "operation": "Send Text",
-        "session": "={{ $('Assistant - Route !panduan').item.json.session }}",
-        "chatId": "={{ $('Assistant - Route !panduan').item.json.chatId }}",
-        "reply_to": "={{ $('Assistant - Route !panduan').item.json.messageId }}",
-        "text": "🌊 Panduan Samudra Bot\n\nPerintah yang tersedia:\n• !lapor <pengamatan> — kirim laporan tanda alam atau kondisi laut/cuaca. Contoh: !lapor awan hitam berkumpul di laut\n• !panduan — tampilkan panduan ini lagi.\n\nJika bot meminta lokasi setelah laporan, kirim lokasi Anda melalui fitur WhatsApp Share Location.\n\nBot ini hanya menangani laporan laut/cuaca dan panduan keselamatan terkait.",
+        "session": "={{ $('Assistant - Route !panduan').first().json.session }}",
+        "chatId": "={{ $('Assistant - Route !panduan').first().json.chatId }}",
+        "reply_to": "={{ $('Assistant - Route !panduan').first().json.messageId }}",
+        "text": "🌊 Panduan Samudra Bot\n\nPerintah yang tersedia:\n• !lapor <pengamatan> — kirim laporan tanda alam atau kondisi laut/cuaca. Contoh: !lapor awan hitam tebal terlihat dari Pantai Lampuuk\n• !tanya <pertanyaan> — tanya bantuan dasar atau cek laporan aktif. Contoh: !tanya bagaimana kondisi di Pantai Lampuuk?\n• !panduan — tampilkan panduan ini lagi.\n\nContoh !tanya:\n• !tanya bagaimana kondisi di Pantai Lampuuk?\n• !tanya apakah ada laporan yang aktif?\n• !tanya bot ini untuk apa?\n• !tanya cara membuat laporan yang benar?\n\nJika bot meminta lokasi setelah laporan, kirim lokasi Anda melalui fitur WhatsApp Share Location.\n\nBot ini hanya menangani laporan laut/cuaca dan panduan keselamatan terkait.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1403,6 +1483,313 @@
           "name": "WAHA account"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error('!lapor processing failed after fallback message was sent. Inspect the upstream error-output node in this execution.');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        -640
+      ],
+      "id": "6b71eb47-ba80-40ac-a02d-6f4578db7b22",
+      "name": "Mark !lapor processing failed"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Extract shared location').first().json.session }}",
+        "chatId": "={{ $('Extract shared location').first().json.sourceGroup }}",
+        "reply_to": "={{ $('Extract shared location').first().json.messageId }}",
+        "text": "⚠️ Maaf, lokasi/laporan belum berhasil diproses. Silakan kirim !lapor ulang jika kondisi masih terlihat.",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        -464,
+        720
+      ],
+      "id": "b6f36056-0eea-4402-b19c-5eb841a4093a",
+      "name": "Send location-completed error fallback",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $input.first().json;\nconst text = typeof incoming.text === 'string' ? incoming.text.trim() : '';\nconst match = text.match(/^!tanya(?:\\s+([\\s\\S]*))?$/i);\n\nif (!match) {\n  return [];\n}\n\nconst question = (match[1] || '').trim();\nconst normalized = question.toLowerCase().replace(/\\s+/g, ' ');\n\nconst beachMap = {\n  '120363406629965480@g.us': 'pantai_lampuuk',\n  '120363425830719164@g.us': 'pantai_lhoknga',\n};\n\nfunction detectBeach(value) {\n  if (/\\b(lampuuk|lampuk)\\b/i.test(value)) return 'pantai_lampuuk';\n  if (/\\blhoknga\\b/i.test(value)) return 'pantai_lhoknga';\n  return beachMap[incoming.chatId] || 'pantai_lampuuk';\n}\n\nreturn [\n  {\n    json: {\n      intent: question ? 'classify' : 'usage',\n      question,\n      chatId: incoming.chatId,\n      session: incoming.session,\n      messageId: incoming.messageId,\n      beachLocation: detectBeach(normalized),\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1088
+      ],
+      "id": "326c19ba-8acf-49a9-8d6e-b0aa0a936bd8",
+      "name": "Assistant - Route !tanya"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e8f42746-bcd5-4a71-b037-86a66288aaa8",
+              "leftValue": "={{ ['active_reports', 'beach_condition'].includes($json.intent) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        1088
+      ],
+      "id": "c4a26059-2c87-41e3-bc0e-70927927eeb8",
+      "name": "Assistant - Needs Active Reports?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst usage = 'Coba salah satu contoh:\\n• !tanya apakah ada laporan yang aktif?\\n• !tanya bagaimana kondisi di Pantai Lampuuk?\\n• !tanya bot ini untuk apa?\\n• !tanya cara membuat laporan yang benar?';\n\nlet reply;\nif (data.intent === 'bot_info') {\n  reply = 'Samudra Bot membantu nelayan melaporkan tanda alam/cuaca laut, memantau laporan aktif, dan memberi panduan keselamatan dasar.';\n} else if (data.intent === 'how_to_report') {\n  reply = 'Untuk membuat laporan, ketik !lapor <pengamatan>. Jika bisa, sertakan tanda alam yang terlihat, lokasi, dan waktu kejadian. Contoh: !lapor awan hitam tebal terlihat dari Pantai Lampuuk';\n} else if (data.intent === 'usage') {\n  reply = usage;\n} else {\n  reply = 'Maaf, saya belum bisa menjawab pertanyaan itu.\\n\\n' + usage;\n}\n\nreturn [{ json: { reply, chatId: data.chatId, session: data.session, messageId: data.messageId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        1216
+      ],
+      "id": "44aa6e5d-2f7f-4a60-9fc9-3eb20f2f3181",
+      "name": "Assistant - Build Static !tanya Reply"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.samudraapp.com/api/reports/active?beach_location=' + encodeURIComponent($json.beachLocation) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        992
+      ],
+      "id": "5f9d92f9-39b8-4d5b-aa15-4acd2446712e",
+      "name": "Assistant - Get Active Reports",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json || {};\nconst ctx = $('Assistant - Parse Intent JSON').first().json;\nconst labels = {\n  pantai_lampuuk: 'Pantai Lampuuk',\n  pantai_lhoknga: 'Pantai Lhoknga',\n};\nconst beachLabel = labels[ctx.beachLocation] || ctx.beachLocation || 'lokasi ini';\nconst unavailable = 'Maaf, data laporan aktif belum bisa diambil saat ini. Coba lagi beberapa saat lagi.';\n\nfunction countSummary(counts) {\n  if (!counts || typeof counts !== 'object') return [];\n  return Object.entries(counts).map(([code, value]) => {\n    if (value && typeof value === 'object') {\n      const count = value.count ?? value.total ?? value.value ?? 0;\n      return String(count) ? code + ': ' + count : code;\n    }\n    return code + ': ' + value;\n  });\n}\n\nlet reply = unavailable;\nif (!data.error && data.ok !== false) {\n  const activeWarning = data.active_warning || data.activeWarning || null;\n  const counts = data.counts || {};\n  const summaries = countSummary(counts).filter((part) => !part.endsWith(': 0'));\n\n  if (activeWarning) {\n    const codes = Array.isArray(activeWarning.codes) ? activeWarning.codes : (activeWarning.code ? [activeWarning.code] : []);\n    const codeText = codes.length ? codes.join(', ') : 'tidak tersedia';\n    reply = 'Ada peringatan aktif di ' + beachLabel + '. Kode: ' + codeText + '. Harap berhati-hati dan ikuti arahan petugas setempat.';\n  } else if (summaries.length > 0) {\n    reply = 'Ada laporan yang sedang dipantau di ' + beachLabel + ': ' + summaries.join('; ') + '. Tetap waspada dan pantau informasi terbaru.';\n  } else {\n    reply = 'Saat ini belum ada laporan aktif di ' + beachLabel + '.';\n  }\n}\n\nreturn [{ json: { reply, chatId: ctx.chatId, session: ctx.session, messageId: ctx.messageId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        992
+      ],
+      "id": "0ce9c3d4-86f0-475f-8ae9-344fac341e6b",
+      "name": "Assistant - Build Active Reports Reply"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item) => ({\n  json: {\n    reply: item.json.reply,\n    chatId: item.json.chatId,\n    session: item.json.session,\n    messageId: item.json.messageId,\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        1088
+      ],
+      "id": "179e601b-df18-43a3-b125-2a1f3e12e14f",
+      "name": "Assistant - Prepare !tanya Reply"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $json.session }}",
+        "chatId": "={{ $json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        528,
+        1088
+      ],
+      "id": "53375728-814d-44a1-b7ae-d55e10898712",
+      "name": "Assistant - Start Typing !tanya",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "=1"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        1088
+      ],
+      "id": "0ef7f8c4-e032-450d-af13-dd869b93cfb2",
+      "name": "Assistant - Wait !tanya 1s",
+      "webhookId": "0f3c83cd-8071-4867-af20-25f177a02bd6"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Assistant - Prepare !tanya Reply').first().json.session }}",
+        "chatId": "={{ $('Assistant - Prepare !tanya Reply').first().json.chatId }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        976,
+        1088
+      ],
+      "id": "282c0ef5-2cb2-440b-84d6-9f547338b961",
+      "name": "Assistant - Stop Typing !tanya",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Assistant - Prepare !tanya Reply').first().json.session }}",
+        "chatId": "={{ $('Assistant - Prepare !tanya Reply').first().json.chatId }}",
+        "reply_to": "={{ $('Assistant - Prepare !tanya Reply').first().json.messageId }}",
+        "text": "={{ $('Assistant - Prepare !tanya Reply').first().json.reply }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1200,
+        1088
+      ],
+      "id": "0af6baf1-8c6b-4bbc-8a05-918f4b73f08a",
+      "name": "Assistant - Send !tanya Reply",
+      "credentials": {
+        "wahaApi": {
+          "id": "DVnL2b7Bf4ZnTmUb",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Anda adalah pengklasifikasi intent untuk Samudra Bot. Pengguna adalah nelayan Indonesia yang mengirim pertanyaan setelah perintah ketat !tanya.\n\nTUGAS ANDA:\n- Klasifikasikan pertanyaan ke salah satu intent berikut saja:\n  1. bot_info: bertanya bot ini apa, untuk apa, fungsi bot, apa itu Samudra Bot.\n  2. how_to_report: bertanya cara lapor, format laporan, contoh laporan, laporan yang benar.\n  3. active_reports: bertanya ada laporan/peringatan/status aktif atau kabar bahaya yang sedang dipantau.\n  4. beach_condition: bertanya kondisi/keadaan/situasi/aman atau tidak di Pantai Lampuuk/Lampuuk/Lampuk/Pantai Lhoknga/Lhoknga.\n  5. unknown: di luar intent di atas, ambigu, obrolan umum, meminta ramalan/cuaca yang tidak berbasis laporan aktif, atau meminta jawaban bebas.\n- Ekstrak beachLocation hanya salah satu dari: pantai_lampuuk, pantai_lhoknga.\n- Jika pertanyaan menyebut lampuuk atau lampuk, gunakan pantai_lampuuk.\n- Jika pertanyaan menyebut lhoknga, gunakan pantai_lhoknga.\n- Jika lokasi tidak disebut, gunakan defaultBeachLocation.\n\nATURAN KETAT:\n- Output HANYA JSON valid.\n- Jangan menjawab pertanyaan pengguna.\n- Jangan membuat teks balasan untuk pengguna.\n- Jangan mengarang data cuaca, laporan, jumlah laporan, peringatan, atau rekomendasi.\n- Jangan menambah field selain intent dan beachLocation.\n\nFORMAT WAJIB:\n{\n  \"intent\": \"active_reports\",\n  \"beachLocation\": \"pantai_lampuuk\"\n}\n\nCONTOH:\nPertanyaan: \"bot ini untuk apa?\" => {\"intent\":\"bot_info\",\"beachLocation\":\"pantai_lampuuk\"}\nPertanyaan: \"gimana cara kasih laporan awan gelap?\" => {\"intent\":\"how_to_report\",\"beachLocation\":\"pantai_lampuuk\"}\nPertanyaan: \"ada kabar bahaya aktif?\" => {\"intent\":\"active_reports\",\"beachLocation\":\"pantai_lampuuk\"}\nPertanyaan: \"di lampuuk aman melaut?\" => {\"intent\":\"beach_condition\",\"beachLocation\":\"pantai_lampuuk\"}\nPertanyaan: \"lhoknga gimana kondisinya?\" => {\"intent\":\"beach_condition\",\"beachLocation\":\"pantai_lhoknga\"}\nPertanyaan: \"besok hujan atau tidak?\" => {\"intent\":\"unknown\",\"beachLocation\":\"pantai_lampuuk\"}\n\nINPUT:\nquestion: {{ $json.question }}\ndefaultBeachLocation: {{ $json.beachLocation }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "candidateCount": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        1184
+      ],
+      "id": "74cdaa4e-f060-40cf-9342-e50185b64340",
+      "name": "Assistant - Classify !tanya Intent",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "d0deRLrj7A4l4yID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce42f466-bc32-47fe-8da5-527b106bb542",
+              "leftValue": "={{ Boolean($json.question) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1264,
+        1088
+      ],
+      "id": "2288eda3-114f-45a4-88b5-2df414a40d01",
+      "name": "Assistant - Has !tanya Question?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Assistant - Route !tanya').first().json;\nconst allowedIntents = new Set(['bot_info', 'how_to_report', 'active_reports', 'beach_condition', 'unknown']);\nconst allowedBeaches = new Set(['pantai_lampuuk', 'pantai_lhoknga']);\n\nfunction normalizeBeach(value) {\n  const raw = String(value || '').toLowerCase();\n  if (raw === 'pantai_lampuuk' || /\\b(lampuuk|lampuk)\\b/.test(raw)) return 'pantai_lampuuk';\n  if (raw === 'pantai_lhoknga' || /\\blhoknga\\b/.test(raw)) return 'pantai_lhoknga';\n  return allowedBeaches.has(ctx.beachLocation) ? ctx.beachLocation : 'pantai_lampuuk';\n}\n\nlet parsed = null;\ntry {\n  const response = $input.first().json || {};\n  const parts = response.content?.parts;\n  if (Array.isArray(parts)) {\n    const responsePart = parts.find((part) => !part.thought) || parts[0];\n    const rawText = String(responsePart?.text || '').replace(/```json|```/g, '').trim();\n    parsed = JSON.parse(rawText);\n  } else if (typeof response.text === 'string') {\n    parsed = JSON.parse(response.text.replace(/```json|```/g, '').trim());\n  } else if (typeof response.intent === 'string') {\n    parsed = response;\n  }\n} catch (error) {\n  parsed = null;\n}\n\nconst intent = parsed && allowedIntents.has(parsed.intent) ? parsed.intent : 'unknown';\nconst beachLocation = normalizeBeach(parsed?.beachLocation);\n\nreturn [\n  {\n    json: {\n      intent,\n      beachLocation,\n      chatId: ctx.chatId,\n      session: ctx.session,\n      messageId: ctx.messageId,\n      question: ctx.question,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        1184
+      ],
+      "id": "24ef4f6a-981e-437c-b156-313b13761d02",
+      "name": "Assistant - Parse Intent JSON"
     }
   ],
   "pinData": {},
@@ -1454,7 +1841,7 @@
         ],
         [
           {
-            "node": "If1",
+            "node": "Does !lapor need shared location?",
             "type": "main",
             "index": 0
           }
@@ -1479,7 +1866,7 @@
         ]
       ]
     },
-    "HTTP Request": {
+    "Submit shore-location report": {
       "main": [
         [
           {
@@ -1508,7 +1895,7 @@
         ],
         [
           {
-            "node": "Code in JavaScript1",
+            "node": "Build shore-location alert broadcasts",
             "type": "main",
             "index": 0
           }
@@ -1545,332 +1932,332 @@
         ],
         [
           {
-            "node": "Code in JavaScript3",
+            "node": "Extract shared location",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Start Typing": {
+    "Start typing shore alert": {
       "main": [
         [
           {
-            "node": "Wait1",
+            "node": "Wait before shore alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Wait1": {
+    "Wait before shore alert": {
       "main": [
         [
           {
-            "node": "Stop Typing",
+            "node": "Stop typing shore alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Stop Typing": {
+    "Stop typing shore alert": {
       "main": [
         [
           {
-            "node": "Send a text message1",
+            "node": "Send shore alert broadcast",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript1": {
+    "Build shore-location alert broadcasts": {
       "main": [
         [
           {
-            "node": "Start Typing",
+            "node": "Start typing shore alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If1": {
+    "Does !lapor need shared location?": {
       "main": [
         [
           {
-            "node": "Code in JavaScript8",
+            "node": "Build shore-location report payload",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Code in JavaScript2",
+            "node": "Build pending location row",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Start Typing1": {
+    "Start typing location request": {
       "main": [
         [
           {
-            "node": "Wait",
+            "node": "Wait before location request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Wait": {
+    "Wait before location request": {
       "main": [
         [
           {
-            "node": "Stop Typing1",
+            "node": "Stop typing location request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Stop Typing1": {
+    "Stop typing location request": {
       "main": [
         [
           {
-            "node": "Send a text message2",
+            "node": "Ask reporter to share location",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript2": {
+    "Build pending location row": {
       "main": [
         [
           {
-            "node": "Insert row",
+            "node": "Clear prior pending-location rows",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Insert row": {
+    "Store pending location row": {
       "main": [
         [
           {
-            "node": "Start Typing1",
+            "node": "Start typing location request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript3": {
+    "Extract shared location": {
       "main": [
         [
           {
-            "node": "Get row(s)",
+            "node": "Get pending location row",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get row(s)": {
+    "Get pending location row": {
       "main": [
         [
           {
-            "node": "Code in JavaScript6",
+            "node": "Check pending location expiry",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If2": {
+    "Has pending location row?": {
       "main": [
         [
           {
-            "node": "Code in JavaScript4",
+            "node": "Merge pending report with location",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript4": {
+    "Merge pending report with location": {
       "main": [
         [
           {
-            "node": "HTTP Request1",
+            "node": "Submit location-completed report",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript6": {
+    "Check pending location expiry": {
       "main": [
         [
           {
-            "node": "If3",
+            "node": "Is pending location expired?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If3": {
+    "Is pending location expired?": {
       "main": [
         [
           {
-            "node": "Start Typing2",
+            "node": "Start typing expired notice",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "If2",
+            "node": "Has pending location row?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Start Typing2": {
+    "Start typing expired notice": {
       "main": [
         [
           {
-            "node": "Wait2",
+            "node": "Wait before expired notice",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Wait2": {
+    "Wait before expired notice": {
       "main": [
         [
           {
-            "node": "Stop Typing2",
+            "node": "Stop typing expired notice",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Stop Typing2": {
+    "Stop typing expired notice": {
       "main": [
         [
           {
-            "node": "Send a text message3",
+            "node": "Send expired pending-location notice",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript8": {
+    "Build shore-location report payload": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Submit shore-location report",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request1": {
+    "Submit location-completed report": {
       "main": [
         [
           {
-            "node": "If queued1",
+            "node": "Is location-completed report queued?",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Send !lapor error fallback",
+            "node": "Send location-completed error fallback",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If queued1": {
+    "Is location-completed report queued?": {
       "main": [
         [
           {
-            "node": "Send queued ack1",
+            "node": "Send location-completed queued ack",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Code in JavaScript7",
+            "node": "Build location alert broadcasts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript7": {
+    "Build location alert broadcasts": {
       "main": [
         [
           {
-            "node": "Start Typing3",
+            "node": "Start typing location alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Start Typing3": {
+    "Start typing location alert": {
       "main": [
         [
           {
-            "node": "Wait3",
+            "node": "Wait before location alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Wait3": {
+    "Wait before location alert": {
       "main": [
         [
           {
-            "node": "Stop Typing3",
+            "node": "Stop typing location alert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Stop Typing3": {
+    "Stop typing location alert": {
       "main": [
         [
           {
-            "node": "Send a text message4",
+            "node": "Send location alert broadcast",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send a text message4": {
+    "Send location alert broadcast": {
       "main": [
         [
           {
-            "node": "Delete row(s)",
+            "node": "Delete completed pending-location rows",
             "type": "main",
             "index": 0
           }
@@ -1922,6 +2309,13 @@
         [
           {
             "node": "Assistant - Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assistant - Route !tanya",
             "type": "main",
             "index": 0
           }
@@ -1977,6 +2371,214 @@
         [
           {
             "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear prior pending-location rows": {
+      "main": [
+        [
+          {
+            "node": "Restore pending row after cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore pending row after cleanup": {
+      "main": [
+        [
+          {
+            "node": "Store pending location row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send expired pending-location notice": {
+      "main": [
+        [
+          {
+            "node": "Delete expired pending-location rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send !lapor error fallback": {
+      "main": [
+        [
+          {
+            "node": "Mark !lapor processing failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send location-completed error fallback": {
+      "main": [
+        [
+          {
+            "node": "Mark !lapor processing failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Route !tanya": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Has !tanya Question?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Needs Active Reports?": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Get Active Reports",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assistant - Build Static !tanya Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Get Active Reports": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Build Active Reports Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Build Active Reports Reply": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Prepare !tanya Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Build Static !tanya Reply": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Prepare !tanya Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Prepare !tanya Reply": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Start Typing !tanya",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Start Typing !tanya": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Wait !tanya 1s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Wait !tanya 1s": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Stop Typing !tanya",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Stop Typing !tanya": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Send !tanya Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Has !tanya Question?": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Classify !tanya Intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assistant - Build Static !tanya Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Classify !tanya Intent": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Parse Intent JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assistant - Parse Intent JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assistant - Parse Intent JSON": {
+      "main": [
+        [
+          {
+            "node": "Assistant - Needs Active Reports?",
             "type": "main",
             "index": 0
           }
