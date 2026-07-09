@@ -9,6 +9,8 @@ services:
       BASE_URL: ${BASE_URL:-}
       REDIS_URL: ${REDIS_URL:-redis://disaster-redis:6379}
       ML_BASE_URL: ${ML_BASE_URL:-http://disaster-ml:8000}
+      REPORT_THRESHOLD: ${REPORT_THRESHOLD:-1}
+      REPORT_WINDOW_MS: ${REPORT_WINDOW_MS:-1000}
       ALERTS_CHANNEL: ${ALERTS_CHANNEL:-alerts:high}
       ALERTS_STREAM: ${ALERTS_STREAM:-alerts:stream}
       ACKS_STREAM: ${ACKS_STREAM:-alerts:acks}
