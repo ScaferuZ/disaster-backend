@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 const workflow = await Bun.file("WAHA - Chatting Template.json").json() as {
-  nodes: Array<{ name: string; parameters?: Record<string, any> }>
+  nodes: Array<{ name: string; parameters?: Record<string, any>; onError?: string }>
+  connections: Record<string, { main: Array<Array<{ node: string }>> }>
 }
 
 function node(name: string) {
@@ -33,5 +34,20 @@ describe("WAHA workflow experiment correlation", () => {
     expect(text).not.toContain("[{{")
     expect(text).not.toContain("[null]")
     expect(text).not.toContain("[undefined]")
+  })
+
+  test("forwards the original WAHA event to backend evidence logging", () => {
+    const forward = node("Forward WAHA evidence")
+    expect(forward.parameters?.method).toBe("POST")
+    expect(forward.parameters?.url).toBe("https://api.samudraapp.com/api/waha/webhook")
+    expect(forward.onError).toBe("continueRegularOutput")
+
+    const body = forward.parameters?.bodyParameters?.parameters as Array<{ name: string; value: string }>
+    expect(body).toContainEqual({ name: "event", value: "={{ $json.event }}" })
+    expect(body).toContainEqual({ name: "payload", value: "={{ $json.payload }}" })
+
+    const triggerTargets = workflow.connections["WAHA Trigger"]?.main.flat().map(({ node }) => node)
+    expect(triggerTargets).toContain("Switch")
+    expect(triggerTargets).toContain("Forward WAHA evidence")
   })
 })

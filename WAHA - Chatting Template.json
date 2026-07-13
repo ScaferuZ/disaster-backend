@@ -179,6 +179,35 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "https://api.samudraapp.com/api/waha/webhook",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event",
+              "value": "={{ $json.event }}"
+            },
+            {
+              "name": "payload",
+              "value": "={{ $json.payload }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2384,
+        -704
+      ],
+      "id": "f49b986a-2fad-4bc1-9b0a-82497baeb60a",
+      "name": "Forward WAHA evidence",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
         "resource": "Chatting",
         "operation": "Send Seen",
         "participant": "",
@@ -1908,6 +1937,11 @@
         [
           {
             "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Forward WAHA evidence",
             "type": "main",
             "index": 0
           }
