@@ -15,6 +15,8 @@ type WAHAWebhookEvent = {
 		from?: string;
 		to?: string;
 		text?: string;
+		body?: string;
+		fromMe?: boolean;
 		id?: string;
 		timestamp?: number;
 		ack?: number; // 1=sent, 2=delivered, 3=read
@@ -48,17 +50,21 @@ export function createWahaWebhookRoute(redisClient: RedisLike = redis) {
 		}
 
 		const timestamp = Date.now();
+		const normalizedEvent = event === "message"
+			? (payload?.fromMe ? "message.sent" : "message.received")
+			: event;
+		const messageText = payload?.text ?? payload?.body;
 		let experimentId: string | null = null;
 
-		if (payload?.text) {
-			experimentId = extractExperimentId(payload.text);
+		if (messageText) {
+			experimentId = extractExperimentId(messageText);
 			if (experimentId) {
 				console.log("[waha-webhook] Extracted experimentId:", experimentId);
 			}
 		}
 
-		if (event === "message.received") {
-			if (!payload?.from || !payload?.text) {
+		if (normalizedEvent === "message.received") {
+			if (!payload?.from || !messageText) {
 				console.log("[waha-webhook] Missing required fields for message.received");
 				return c.json({ success: false, error: "Missing from or text" }, 400);
 			}
@@ -72,13 +78,13 @@ export function createWahaWebhookRoute(redisClient: RedisLike = redis) {
 				timestamp: String(timestamp),
 				reporterTimestamp: String(reporterTimestamp),
 				from: payload.from,
-				text: payload.text,
+				text: messageText,
 				...(experimentId && { experimentId }),
 			});
 
 			console.log("[waha-webhook] Logged to whatsapp:incoming stream");
-		} else if (event === "message.sent") {
-			if (!payload?.to || !payload?.text) {
+		} else if (normalizedEvent === "message.sent") {
+			if (!payload?.to || !messageText) {
 				console.log("[waha-webhook] Missing required fields for message.sent");
 				return c.json({ success: false, error: "Missing to or text" }, 400);
 			}
@@ -86,7 +92,7 @@ export function createWahaWebhookRoute(redisClient: RedisLike = redis) {
 			await redisClient.xAdd("whatsapp:outgoing", "*", {
 				timestamp: String(timestamp),
 				to: payload.to,
-				text: payload.text,
+				text: messageText,
 				...(experimentId && { experimentId }),
 			});
 			if (payload.id && experimentId) {
@@ -94,7 +100,7 @@ export function createWahaWebhookRoute(redisClient: RedisLike = redis) {
 			}
 
 			console.log("[waha-webhook] Logged to whatsapp:outgoing stream");
-		} else if (event === "message.ack" || event === "message.ack.group") {
+		} else if (normalizedEvent === "message.ack" || normalizedEvent === "message.ack.group") {
 			if (!payload?.id || !payload?.from) {
 				console.log("[waha-webhook] Missing required fields for message.ack");
 				return c.json({ success: false, error: "Missing id or from" }, 400);
@@ -119,7 +125,7 @@ export function createWahaWebhookRoute(redisClient: RedisLike = redis) {
 
 			console.log("[waha-webhook] Logged to whatsapp:acks stream, ack level:", ackLevel);
 		} else {
-			console.log("[waha-webhook] Unknown event type:", event);
+			console.log("[waha-webhook] Unknown event type:", normalizedEvent);
 			return c.json({ success: false, error: "Unknown event type" }, 400);
 		}
 

@@ -44,6 +44,24 @@ describe("WAHA webhook evidence logging", () => {
 		expect(mock.calls.xAdd[0]?.fields).toMatchObject({ reporterTimestamp: "1700000000000", experimentId: "EXP-1" });
 	});
 
+	test("accepts the native WAHA message event and body field", async () => {
+		const mock = createMockRedis();
+		const app = createWahaWebhookRoute(mock);
+		const response = await app.request("/waha/webhook", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({
+				event: "message",
+				payload: { from: "reporter", fromMe: false, body: "!lapor hujan [EXP-NATIVE]", timestamp: 1_700_000_000 },
+			}),
+		});
+		expect(response.status).toBe(200);
+		expect(mock.calls.xAdd[0]).toMatchObject({
+			stream: "whatsapp:incoming",
+			fields: { reporterTimestamp: "1700000000000", experimentId: "EXP-NATIVE" },
+		});
+	});
+
 	test("maps n8n-emitted message ids from tagged outbound responses", async () => {
 		const mock = createMockRedis();
 		const app = createWahaWebhookRoute(mock);
