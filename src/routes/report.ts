@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { redis } from "../lib/redis";
 import { sendWAAlert } from "../lib/waha";
+import { normalizeExperimentId } from "../lib/experiment-utils";
 import { processReport, getActiveWarning, setActiveWarning } from "../lib/crowdsource";
 import {
 	ALERTS_CHANNEL,
@@ -54,7 +55,7 @@ export function buildAlertEvent(params: BuildAlertEventParams): AlertEvent {
 		alertId: params.alertId,
 		reportId: params.reportId,
 		serverTimestamp: params.serverTimestamp,
-		experimentId: typeof params.experimentId === "string" ? params.experimentId : null,
+		experimentId: normalizeExperimentId(params.experimentId),
 		client: {
 			clientReportId: params.clientReportId ?? null,
 			createdAtClient: params.createdAtClient ?? null,
@@ -119,6 +120,11 @@ route.post("/report", async (c) => {
 	}
 
 	const receivedAtServer = Date.now();
+	const experimentId = normalizeExperimentId(input._experimentId);
+	const reporterTimestamp =
+		input._channel === "WA" && Number.isFinite(input._reporterTimestamp) && input._reporterTimestamp! > 0
+			? (input._reporterTimestamp! < 1e12 ? input._reporterTimestamp! * 1000 : input._reporterTimestamp!)
+			: null;
 	const clientReportId = input.clientReportId;
 	const createdAtClient = input.createdAtClient;
 	const syncDelayMs = typeof createdAtClient === "number" ? receivedAtServer - createdAtClient : null;
@@ -252,7 +258,7 @@ route.post("/report", async (c) => {
 			isMultisign,
 			isActionable,
 			shouldDistribute,
-			experimentId: input._experimentId,
+			experimentId,
 		});
 
 		// Merge ML-returned active_warning with existing codes (union — warnings only grow until TTL)
@@ -268,12 +274,13 @@ route.post("/report", async (c) => {
 		const isWA = input._channel === "WA";
 		const channel = isWA ? "WHATSAPP" : (input._channel ?? "PWA");
 
-		if (input._experimentId && typeof input._experimentId === "string") {
+		if (experimentId) {
 			await redis.xAdd("experiments:triggers", "*", {
-				experimentId: input._experimentId,
+				experimentId,
 				channel,
 				triggeredAt: String(Date.now()),
 				alertId: alertEvent.alertId,
+				...(reporterTimestamp !== null && { reporterTimestamp: String(reporterTimestamp) }),
 			});
 		} else if (isWA) {
 			await redis.xAdd("experiments:triggers", "*", {

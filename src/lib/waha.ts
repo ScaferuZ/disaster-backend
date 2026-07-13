@@ -1,4 +1,5 @@
 import {
+	EXPERIMENT_TAG_WA,
 	WA_SEND_STREAM,
 	WAHA_API_KEY,
 	WAHA_API_URL,
@@ -11,6 +12,7 @@ type StreamFields = Record<string, string>;
 
 type RedisLike = {
 	xAdd: (stream: string, id: string, fields: StreamFields) => Promise<unknown>;
+	set: (key: string, value: string, options: { EX: number }) => Promise<unknown>;
 };
 
 type SendWAAlertDeps = {
@@ -61,6 +63,9 @@ export async function sendWAAlert(
 	const redisClient = deps.redis ?? redis;
 	const fetchFn = deps.fetchFn ?? globalThis.fetch;
 
+	const outboundText =
+		EXPERIMENT_TAG_WA && experimentId ? `[${experimentId}] ${text}` : text;
+
 	async function logSend(fields: {
 		chatId: string;
 		status: "SENT" | "FAILED";
@@ -94,7 +99,7 @@ export async function sendWAAlert(
 				body: JSON.stringify({
 					session: WAHA_SESSION,
 					chatId,
-					text,
+					text: outboundText,
 				}),
 			});
 
@@ -117,6 +122,14 @@ export async function sendWAAlert(
 				messageId = extractMessageId(body);
 			} catch {
 				messageId = null;
+			}
+
+			if (messageId && experimentId) {
+				try {
+					await redisClient.set(`whatsapp:msg:${messageId}:experiment`, experimentId, { EX: 86_400 });
+				} catch (mappingErr) {
+					console.error(`[waha] failed to persist ack correlation for ${messageId}:`, mappingErr);
+				}
 			}
 
 			await logSend({

@@ -2,6 +2,15 @@
  * Helper functions for WhatsApp message experiments
  */
 
+/** Normalize experiment identifiers crossing external workflow boundaries. */
+export function normalizeExperimentId(value: unknown): string | null {
+  if (typeof value !== "string") return null
+
+  const normalized = value.trim().replace(/^=+/, "").trim()
+  if (!normalized || !/^[A-Z0-9_-]+$/i.test(normalized)) return null
+  return normalized
+}
+
 /**
  * Format a WhatsApp message with experiment identifier
  * @param text - The message text

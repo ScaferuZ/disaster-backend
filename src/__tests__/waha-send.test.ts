@@ -32,6 +32,9 @@ describe("sendWAAlert logs to whatsapp:send", () => {
 			expect(typeof w.fields.timestamp).toBe("string");
 			expect(WAHA_BROADCAST_GROUPS).toContain(w.fields.chatId ?? "");
 		}
+		const mappings = mock.calls.set.filter((c) => c.key === "whatsapp:msg:wamid.X:experiment");
+		expect(mappings).toHaveLength(WAHA_BROADCAST_GROUPS.length);
+		expect(mappings[0]).toMatchObject({ value: "EXP-001", options: { EX: 86_400 } });
 	});
 
 	test("FAILED (non-ok response): status FAILED with httpStatus and error", async () => {
@@ -75,6 +78,9 @@ describe("sendWAAlert logs to whatsapp:send", () => {
 	test("logging failure never aborts the broadcast loop", async () => {
 		const throwingRedis = {
 			async xAdd() {
+				throw new Error("redis down");
+			},
+			async set() {
 				throw new Error("redis down");
 			},
 		};

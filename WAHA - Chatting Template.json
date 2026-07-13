@@ -148,8 +148,8 @@
               "value": "WA"
             },
             {
-              "name": "=_experimentId",
-              "value": "=={{ $('check-message-and-user').first().json.payload.body.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}\n"
+              "name": "_experimentId",
+              "value": "={{ $('check-message-and-user').first().json.payload.body.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
             }
           ]
         },
@@ -395,7 +395,7 @@
         "session": "={{ $('Build shore-location alert broadcasts').item.json.session }}",
         "chatId": "={{ $('Build shore-location alert broadcasts').item.json.chatId }}",
         "reply_to": "={{ $('Build shore-location alert broadcasts').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build shore-location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build shore-location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "text": "={{ $('Submit shore-location report').item.json.alertEvent.experimentId ? '[' + $('Submit shore-location report').item.json.alertEvent.experimentId + '] ' : '' }}⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build shore-location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit shore-location report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build shore-location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",
@@ -1015,7 +1015,7 @@
             },
             {
               "name": "_experimentId",
-              "value": "=={{ $json.originalText.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
+              "value": "={{ $json.originalText.match(/\\[([A-Z0-9-]+)\\]/)?.[1] ?? null }}"
             }
           ]
         },
@@ -1087,7 +1087,7 @@
         "session": "={{ $('Build location alert broadcasts').item.json.session }}",
         "chatId": "={{ $('Build location alert broadcasts').item.json.chatId }}",
         "reply_to": "={{ $('Build location alert broadcasts').item.json.chatId }}",
-        "text": "=⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
+        "text": "={{ $('Submit location-completed report').item.json.alertEvent.experimentId ? '[' + $('Submit location-completed report').item.json.alertEvent.experimentId + '] ' : '' }}⚠️ PERINGATAN CUACA\n\nPelapor: {{ $('Build location alert broadcasts').item.json.reporterWhatsapp }}\n\nRekomendasi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.action_recommendation }}\n\nTanda alam terdeteksi:\n{{ $('Submit location-completed report').item.json.alertEvent.ml.sign_description }}\n\nLokasi Laporan:\n{{ $('Build location alert broadcasts').item.json.locationText }}\n\nMohon berhati-hati saat melaut.",
         "requestOptions": {}
       },
       "type": "@devlikeapro/n8n-nodes-waha.WAHA",

@@ -14,6 +14,7 @@ export type PredictionInput = {
 	clientReportId?: string;
 	createdAtClient?: number;
 	_experimentId?: string;
+	_reporterTimestamp?: number;
 	is_active_warning?: boolean;
 	active_warning?: string[];
 	_channel?: string;

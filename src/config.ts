@@ -69,6 +69,11 @@ export const WAHA_BROADCAST_GROUPS = parseCsvEnv(
 );
 export const WA_SEND_STREAM = process.env.WA_SEND_STREAM ?? "whatsapp:send";
 
+// Experiment-only: when true, sendWAAlert appends a "[experimentId]" tag to the
+// outbound WhatsApp text so the WAHA webhook can correlate acks back to a trigger.
+// Default false => production message text is unchanged.
+export const EXPERIMENT_TAG_WA = parseBoolEnv(process.env.EXPERIMENT_TAG_WA, false);
+
 if (JWT_AUTH_ENABLED && !JWT_SECRET) {
 	throw new Error("JWT_AUTH_ENABLED=true requires JWT_SECRET to be set");
 }
