@@ -8,6 +8,8 @@ export type ActiveWarning = {
 	codes: string[];
 	triggeredAt: number;
 	alertId: string;
+	reportCount?: number;
+	reportCounts?: Record<string, number>;
 	alertEvent?: Record<string, unknown>;
 };
 
@@ -81,12 +83,19 @@ export async function setActiveWarning(
 	alertId: string,
 	ttlSeconds: number,
 	alertEvent?: Record<string, unknown>,
+	reportCounts?: Record<string, number>,
 ): Promise<void> {
 	const key = `${WARNING_PREFIX}:${beachLocation}`;
 	const warning: ActiveWarning = {
 		codes,
 		triggeredAt: Date.now(),
 		alertId,
+		...(reportCounts
+			? {
+				reportCount: Object.values(reportCounts).reduce((total, count) => total + count, 0),
+				reportCounts,
+			}
+			: {}),
 		...(alertEvent ? { alertEvent } : {}),
 	};
 	await redis.set(key, JSON.stringify(warning), { EX: ttlSeconds });

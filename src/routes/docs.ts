@@ -81,7 +81,7 @@ const openApiDoc = {
 		"/api/reports/active": {
 			get: {
 				summary: "Get current active crowdsource report counts per beach",
-				description: "Returns live report counts per LIK code within the current time window, whether each code has already triggered ML this window, and the active warning with full ML data if one exists.",
+				description: "Returns live report counts per LIK code within the current time window, whether each code has already triggered ML this window, and the active warning with full ML data and trigger-time report evidence if one exists.",
 				tags: ["Report"],
 				security: [{ bearerAuth: [] }],
 				parameters: [
@@ -467,6 +467,16 @@ const openApiDoc = {
 					codes: { type: "array", items: { type: "string" } },
 					triggeredAt: { type: "number" },
 					alertId: { type: "string", format: "uuid" },
+					reportCount: {
+						type: "number",
+						description: "Sum of per-code report evidence captured at trigger time; this is not a unique-person count",
+					},
+					reportCounts: {
+						type: "object",
+						additionalProperties: { type: "number" },
+						description: "Per-code report evidence captured at trigger time, independent of the current queue counts",
+						example: { K1: 5, K3: 2 },
+					},
 					alertEvent: {
 						type: "object",
 						nullable: true,
