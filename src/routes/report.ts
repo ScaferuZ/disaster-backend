@@ -185,7 +185,7 @@ route.post("/report", async (c) => {
 		const reportId = crypto.randomUUID();
 
 		// Crowdsource queue: accumulate reports per (beach, code) and check threshold
-		const { triggeredCodes, codeCounts } = await processReport(
+		const { triggeredCodes, codeCounts, reportCount } = await processReport(
 			beachLocation,
 			input.lik_codes,
 			REPORT_WINDOW_MS,
@@ -272,7 +272,7 @@ route.post("/report", async (c) => {
 			alertEvent.alertId,
 			ACTIVE_WARNING_TTL_SECONDS,
 			alertEvent,
-			codeCounts,
+			{ reportCount, reportCounts: codeCounts },
 		);
 
 		const alertJson = JSON.stringify(alertEvent);

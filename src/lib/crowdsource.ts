@@ -13,6 +13,11 @@ export type ActiveWarning = {
 	alertEvent?: Record<string, unknown>;
 };
 
+export type ActiveWarningEvidence = {
+	reportCount: number;
+	reportCounts: Record<string, number>;
+};
+
 /**
  * Adds a report's LIK codes to the crowdsource queue and returns which codes
  * have hit the threshold within the time window.
@@ -22,17 +27,24 @@ export async function processReport(
 	likCodes: string[],
 	windowMs: number,
 	threshold: number,
-): Promise<{ triggeredCodes: string[]; codeCounts: Record<string, number> }> {
+): Promise<{ triggeredCodes: string[]; codeCounts: Record<string, number>; reportCount: number }> {
 	const now = Date.now();
 	const windowStart = now - windowMs;
 	const triggeredCodes: string[] = [];
 	const codeCounts: Record<string, number> = {};
-
+	const evidenceId = crypto.randomUUID();
+	const uniqueCodes = new Map<string, string>();
 	for (const code of likCodes) {
-		const key = `${QUEUE_PREFIX}:${beachLocation}:${code.toLowerCase()}`;
-		const cooldownKey = `${COOLDOWN_PREFIX}:${beachLocation}:${code}`;
+		const trimmed = code.trim();
+		const normalized = trimmed.toLowerCase();
+		if (!uniqueCodes.has(normalized)) uniqueCodes.set(normalized, trimmed);
+	}
 
-		await redis.zAdd(key, { score: now, value: crypto.randomUUID() });
+	for (const [normalizedCode, code] of uniqueCodes) {
+		const key = `${QUEUE_PREFIX}:${beachLocation}:${normalizedCode}`;
+		const cooldownKey = `${COOLDOWN_PREFIX}:${beachLocation}:${normalizedCode}`;
+
+		await redis.zAdd(key, { score: now, value: evidenceId });
 		await redis.zRemRangeByScore(key, 0, windowStart);
 		const count = await redis.zCard(key);
 
@@ -47,7 +59,14 @@ export async function processReport(
 		}
 	}
 
-	return { triggeredCodes, codeCounts };
+	const triggeredEvidenceIds = new Set<string>();
+	for (const code of triggeredCodes) {
+		const key = `${QUEUE_PREFIX}:${beachLocation}:${code.toLowerCase()}`;
+		const members = await redis.zRangeByScore(key, windowStart, "+inf");
+		for (const member of members) triggeredEvidenceIds.add(member);
+	}
+
+	return { triggeredCodes, codeCounts, reportCount: triggeredEvidenceIds.size };
 }
 
 /**
@@ -83,17 +102,17 @@ export async function setActiveWarning(
 	alertId: string,
 	ttlSeconds: number,
 	alertEvent?: Record<string, unknown>,
-	reportCounts?: Record<string, number>,
+	evidence?: ActiveWarningEvidence,
 ): Promise<void> {
 	const key = `${WARNING_PREFIX}:${beachLocation}`;
 	const warning: ActiveWarning = {
 		codes,
 		triggeredAt: Date.now(),
 		alertId,
-		...(reportCounts
+		...(evidence
 			? {
-				reportCount: Object.values(reportCounts).reduce((total, count) => total + count, 0),
-				reportCounts,
+				reportCount: evidence.reportCount,
+				reportCounts: evidence.reportCounts,
 			}
 			: {}),
 		...(alertEvent ? { alertEvent } : {}),

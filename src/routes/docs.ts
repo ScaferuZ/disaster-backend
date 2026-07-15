@@ -489,12 +489,12 @@ const openApiDoc = {
 					alertId: { type: "string", format: "uuid" },
 					reportCount: {
 						type: "number",
-						description: "Sum of per-code report evidence captured at trigger time; this is not a unique-person count",
+						description: "Distinct report submissions supporting the latest trigger; this is not a unique-person count",
 					},
 					reportCounts: {
 						type: "object",
 						additionalProperties: { type: "number" },
-						description: "Per-code report evidence captured at trigger time, independent of the current queue counts",
+						description: "Per-code report evidence captured at trigger time; one submission may contribute to multiple codes",
 						example: { K1: 5, K3: 2 },
 					},
 					alertEvent: {

@@ -45,7 +45,7 @@ route.get("/reports/active", async (c) => {
 		const count = await redis.zCount(key, windowStart, "+inf");
 		if (count === 0) continue;
 
-		const cooldownKey = `reports:cooldown:${beachLocation}:${code}`;
+		const cooldownKey = `reports:cooldown:${beachLocation}:${suffix}`;
 		const cooldownExists = await redis.get(cooldownKey);
 
 		counts[code] = { count, triggered: cooldownExists !== null };

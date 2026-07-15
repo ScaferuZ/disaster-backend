@@ -39,6 +39,7 @@ type Calls = {
 	hVals: Array<{ key: string }>;
 	zAdd: Array<{ key: string; score: number; value: string }>;
 	zRemRangeByScore: Array<{ key: string; min: number; max: number }>;
+	zRangeByScore: Array<{ key: string; min: number; max: number | string }>;
 	zCard: Array<{ key: string }>;
 	publish: Array<{ channel: string; message: string }>;
 };
@@ -101,6 +102,7 @@ export function createMockRedis() {
 		hVals: [],
 		zAdd: [],
 		zRemRangeByScore: [],
+		zRangeByScore: [],
 		zCard: [],
 		publish: [],
 	};
@@ -211,6 +213,14 @@ export function createMockRedis() {
 			}
 			if (zset.size === 0) zsets.delete(key);
 			return removed;
+		},
+		async zRangeByScore(key: string, min: number, max: number | string) {
+			calls.zRangeByScore.push({ key, min, max });
+			const upperBound = max === "+inf" ? Number.POSITIVE_INFINITY : Number(max);
+			return Array.from(zsets.get(key)?.values() ?? [])
+				.filter((entry) => entry.score >= min && entry.score <= upperBound)
+				.sort((a, b) => a.score - b.score)
+				.map((entry) => entry.value);
 		},
 		async zCard(key: string) {
 			calls.zCard.push({ key });
