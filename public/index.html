@@ -71,6 +71,17 @@
       color: #111;
     }
 
+    button.danger {
+      border-color: #9f1d20;
+      background: #b42328;
+      color: #fff;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
     #status {
       font-size: 0.9rem;
       max-width: 700px;
@@ -136,7 +147,8 @@
 
     <div class="actions">
       <button type="submit">Submit Report</button>
-      <button type="button" id="flush-now" class="secondary">Flush Queue Now</button>
+      <button type="button" id="flush-now" class="secondary">Flush Local Queue Now</button>
+      <button type="button" id="clear-beach-reports" class="danger">Clear Selected Beach State</button>
     </div>
   </form>
 

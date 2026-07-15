@@ -2,6 +2,7 @@ const DB_NAME = "disaster-stage5";
 const DB_VERSION = 1;
 const STORE_NAME = "queued_reports";
 const REPORT_ENDPOINT = "/api/report";
+const ACTIVE_REPORTS_ENDPOINT = "/api/reports/active";
 const SYNC_TAG = "report-sync";
 const PUSH_VAPID_ENDPOINT = "/api/push/vapid-public-key";
 const PUSH_SUBSCRIBE_ENDPOINT = "/api/push/subscribe";
@@ -17,6 +18,7 @@ const authRegisterButton = document.getElementById("auth-register");
 const authLoginButton = document.getElementById("auth-login");
 const authLogoutButton = document.getElementById("auth-logout");
 const flushNowButton = document.getElementById("flush-now");
+const clearBeachReportsButton = document.getElementById("clear-beach-reports");
 const pushToggleButton = document.getElementById("push-toggle");
 const logNode = document.getElementById("log");
 const networkState = document.getElementById("network-state");
@@ -29,6 +31,7 @@ if (
   !authLoginButton ||
   !authLogoutButton ||
   !flushNowButton ||
+  !clearBeachReportsButton ||
   !pushToggleButton ||
   !logNode ||
   !networkState ||
@@ -337,6 +340,39 @@ async function removeQueuedReport(clientReportId) {
   });
 }
 
+async function clearSelectedBeachState() {
+  const beachLocation = document.getElementById("beach_location").value.trim().toLowerCase();
+  if (!beachLocation) {
+    throw new Error("select a beach_location first");
+  }
+
+  const confirmed = window.confirm(
+    `Delete queued reports, cooldowns, and the active warning for ${beachLocation}? This cannot be undone.`,
+  );
+  if (!confirmed) {
+    log(`clear cancelled for ${beachLocation}`);
+    return;
+  }
+
+  clearBeachReportsButton.disabled = true;
+  try {
+    const query = new URLSearchParams({ beach_location: beachLocation });
+    const response = await fetch(`${ACTIVE_REPORTS_ENDPOINT}?${query}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(`clear failed (${response.status}) ${detail}`);
+    }
+
+    const result = await response.json();
+    log(`cleared ${result.deleted ?? 0} Redis keys for ${beachLocation}`);
+  } finally {
+    clearBeachReportsButton.disabled = false;
+  }
+}
+
 async function sendReport(report) {
   const response = await fetch(REPORT_ENDPOINT, {
     method: "POST",
@@ -508,6 +544,11 @@ authLogoutButton.addEventListener("click", () => {
 
 flushNowButton.addEventListener("click", async () => {
   await flushQueue("manual");
+});
+clearBeachReportsButton.addEventListener("click", () => {
+  clearSelectedBeachState().catch((err) => {
+    log(`clear error: ${String(err)}`);
+  });
 });
 pushToggleButton.addEventListener("click", () => {
   togglePush().catch((err) => {

@@ -105,6 +105,26 @@ const openApiDoc = {
 					"400": { description: "Missing or invalid beach_location" },
 				},
 			},
+			delete: {
+				summary: "Clear report state for one beach",
+				description: "Deletes queued report counts, threshold cooldowns, and the active warning only for the selected beach. Alert, ACK, and experiment streams are preserved.",
+				tags: ["Report"],
+				security: [{ bearerAuth: [] }],
+				parameters: [
+					{
+						in: "query",
+						name: "beach_location",
+						required: true,
+						schema: { type: "string", enum: ALLOWED_BEACH_LOCATIONS },
+						description: "Only this beach's report state is deleted",
+					},
+				],
+				responses: {
+					"200": { description: "Selected beach report state cleared" },
+					"400": { description: "Missing or invalid beach_location" },
+					"401": { description: "Authentication required when JWT auth is enabled" },
+				},
+			},
 		},
 		"/api/history": {
 			get: {
