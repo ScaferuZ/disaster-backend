@@ -3,12 +3,14 @@ import { redis } from "./redis";
 const QUEUE_PREFIX = "reports:queue";
 const COOLDOWN_PREFIX = "reports:cooldown";
 const WARNING_PREFIX = "warnings:active";
+const WARNING_REPORT_COUNT_PREFIX = "warnings:report-count";
 
 export type ActiveWarning = {
 	codes: string[];
 	triggeredAt: number;
 	alertId: string;
 	reportCount?: number;
+	reportCountSinceTrigger?: number;
 	reportCounts?: Record<string, number>;
 	alertEvent?: Record<string, unknown>;
 };
@@ -87,10 +89,30 @@ export async function getActiveWarning(beachLocation: string): Promise<ActiveWar
 	const val = await redis.get(key);
 	if (!val) return null;
 	try {
-		return JSON.parse(val) as ActiveWarning;
+		const warning = JSON.parse(val) as ActiveWarning;
+		const cumulativeCount = await redis.get(`${WARNING_REPORT_COUNT_PREFIX}:${warning.alertId}`);
+		return {
+			...warning,
+			reportCountSinceTrigger: cumulativeCount === null
+				? (warning.reportCountSinceTrigger ?? warning.reportCount)
+				: Number(cumulativeCount),
+		};
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * Counts one accepted report toward an existing warning without extending its TTL.
+ */
+export async function incrementActiveWarningReport(
+	warning: ActiveWarning,
+	ttlSeconds: number,
+): Promise<number> {
+	const key = `${WARNING_REPORT_COUNT_PREFIX}:${warning.alertId}`;
+	const baseline = warning.reportCountSinceTrigger ?? warning.reportCount ?? 0;
+	await redis.set(key, String(baseline), { NX: true, EX: ttlSeconds });
+	return redis.incr(key);
 }
 
 /**
@@ -103,6 +125,7 @@ export async function setActiveWarning(
 	ttlSeconds: number,
 	alertEvent?: Record<string, unknown>,
 	evidence?: ActiveWarningEvidence,
+	reportCountSinceTrigger?: number,
 ): Promise<void> {
 	const key = `${WARNING_PREFIX}:${beachLocation}`;
 	const warning: ActiveWarning = {
@@ -112,10 +135,18 @@ export async function setActiveWarning(
 		...(evidence
 			? {
 				reportCount: evidence.reportCount,
+				reportCountSinceTrigger: reportCountSinceTrigger ?? evidence.reportCount,
 				reportCounts: evidence.reportCounts,
 			}
 			: {}),
 		...(alertEvent ? { alertEvent } : {}),
 	};
 	await redis.set(key, JSON.stringify(warning), { EX: ttlSeconds });
+	if (warning.reportCountSinceTrigger !== undefined) {
+		await redis.set(
+			`${WARNING_REPORT_COUNT_PREFIX}:${alertId}`,
+			String(warning.reportCountSinceTrigger),
+			{ EX: ttlSeconds },
+		);
+	}
 }

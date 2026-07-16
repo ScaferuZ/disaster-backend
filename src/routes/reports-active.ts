@@ -79,6 +79,7 @@ route.delete("/reports/active", apiJwtAuth, async (c) => {
 		);
 	}
 
+	const activeWarning = await getActiveWarning(beachLocation);
 	let deleted = 0;
 	for (const pattern of [
 		`reports:queue:${beachLocation}:*`,
@@ -89,6 +90,9 @@ route.delete("/reports/active", apiJwtAuth, async (c) => {
 		}
 	}
 	deleted += await redis.del(`warnings:active:${beachLocation}`);
+	if (activeWarning) {
+		deleted += await redis.del(`warnings:report-count:${activeWarning.alertId}`);
+	}
 
 	return c.json({ ok: true, beach_location: beachLocation, deleted });
 });

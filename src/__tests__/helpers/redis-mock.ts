@@ -33,6 +33,7 @@ type Calls = {
 	xAdd: Array<{ stream: string; id: string; fields: StreamFields }>;
 	get: Array<{ key: string }>;
 	set: Array<{ key: string; value: string; options?: RedisSetOptions }>;
+	incr: Array<{ key: string }>;
 	del: Array<{ key: string }>;
 	hSet: Array<{ key: string; field: string; value: string }>;
 	hDel: Array<{ key: string; field: string }>;
@@ -96,6 +97,7 @@ export function createMockRedis() {
 		xAdd: [],
 		get: [],
 		set: [],
+		incr: [],
 		del: [],
 		hSet: [],
 		hDel: [],
@@ -168,6 +170,13 @@ export function createMockRedis() {
 			const expiresAt = typeof options?.EX === "number" ? Date.now() + options.EX * 1000 : null;
 			kv.set(key, { value, expiresAt });
 			return "OK";
+		},
+		async incr(key: string) {
+			calls.incr.push({ key });
+			const existing = kv.get(key);
+			const value = Number(readValue(key) ?? "0") + 1;
+			kv.set(key, { value: String(value), expiresAt: existing?.expiresAt ?? null });
+			return value;
 		},
 		async del(key: string) {
 			calls.del.push({ key });

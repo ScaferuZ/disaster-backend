@@ -490,6 +490,10 @@ const openApiDoc = {
 						type: "number",
 						description: "Distinct report submissions supporting the latest trigger; this is not a unique-person count",
 					},
+					reportCountSinceTrigger: {
+						type: "number",
+						description: "Cumulative accepted reports since the active warning was triggered; increases until the warning expires",
+					},
 					reportCounts: {
 						type: "object",
 						additionalProperties: { type: "number" },

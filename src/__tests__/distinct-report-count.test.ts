@@ -10,7 +10,12 @@ mock.module("../lib/redis", () => ({
 	initRedis: async () => {},
 }));
 
-const { processReport } = await import("../lib/crowdsource");
+const {
+	getActiveWarning,
+	incrementActiveWarningReport,
+	processReport,
+	setActiveWarning,
+} = await import("../lib/crowdsource");
 
 const WINDOW_MS = 600_000;
 
@@ -54,5 +59,27 @@ describe("distinct active-warning report evidence", () => {
 		expect(second.codeCounts).toEqual({ "wn-6": 2 });
 		expect(second.triggeredCodes).toEqual(["wn-6"]);
 		expect(second.reportCount).toBe(2);
+	});
+
+	test("keeps a cumulative report count for the active warning", async () => {
+		const beach = "cumulative-active-warning";
+		const alertId = crypto.randomUUID();
+		await setActiveWarning(
+			beach,
+			["wn-6"],
+			alertId,
+			43_200,
+			undefined,
+			{ reportCount: 5, reportCounts: { "wn-6": 5 } },
+		);
+
+		const initial = await getActiveWarning(beach);
+		expect(initial?.reportCountSinceTrigger).toBe(5);
+		expect(await incrementActiveWarningReport(initial!, 43_200)).toBe(6);
+		expect(await incrementActiveWarningReport(initial!, 43_200)).toBe(7);
+
+		const updated = await getActiveWarning(beach);
+		expect(updated?.reportCount).toBe(5);
+		expect(updated?.reportCountSinceTrigger).toBe(7);
 	});
 });

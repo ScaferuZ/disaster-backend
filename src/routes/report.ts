@@ -2,7 +2,12 @@ import { Hono } from "hono";
 import { redis } from "../lib/redis";
 import { sendWAAlert } from "../lib/waha";
 import { normalizeExperimentId } from "../lib/experiment-utils";
-import { processReport, getActiveWarning, setActiveWarning } from "../lib/crowdsource";
+import {
+	processReport,
+	getActiveWarning,
+	incrementActiveWarningReport,
+	setActiveWarning,
+} from "../lib/crowdsource";
 import {
 	ALERTS_CHANNEL,
 	ALERTS_STREAM,
@@ -184,6 +189,8 @@ route.post("/report", async (c) => {
 		const serverTimestamp = Date.now();
 		const reportId = crypto.randomUUID();
 
+		const existingWarning = await getActiveWarning(beachLocation);
+
 		// Crowdsource queue: accumulate reports per (beach, code) and check threshold
 		const { triggeredCodes, codeCounts, reportCount } = await processReport(
 			beachLocation,
@@ -193,6 +200,9 @@ route.post("/report", async (c) => {
 		);
 
 		if (triggeredCodes.length === 0) {
+			if (existingWarning) {
+				await incrementActiveWarningReport(existingWarning, ACTIVE_WARNING_TTL_SECONDS);
+			}
 			await logReportSyncEvent({
 				status: "QUEUED",
 				clientReportId: clientReportId ?? null,
@@ -206,8 +216,6 @@ route.post("/report", async (c) => {
 		}
 
 		// Threshold hit — proceed to ML
-
-		const existingWarning = await getActiveWarning(beachLocation);
 
 		const mlPayload = {
 			lik_codes: triggeredCodes,
@@ -266,6 +274,9 @@ route.post("/report", async (c) => {
 			...(existingWarning?.codes ?? []),
 			...result.active_warning,
 		])];
+		const reportCountSinceTrigger = existingWarning
+			? await incrementActiveWarningReport(existingWarning, ACTIVE_WARNING_TTL_SECONDS)
+			: reportCount;
 		await setActiveWarning(
 			beachLocation,
 			mergedCodes,
@@ -273,6 +284,7 @@ route.post("/report", async (c) => {
 			ACTIVE_WARNING_TTL_SECONDS,
 			alertEvent,
 			{ reportCount, reportCounts: codeCounts },
+			reportCountSinceTrigger,
 		);
 
 		const alertJson = JSON.stringify(alertEvent);
