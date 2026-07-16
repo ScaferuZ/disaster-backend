@@ -6,7 +6,6 @@ import { apiJwtAuth } from "../middleware/jwtAuth";
 import { ALLOWED_BEACH_LOCATIONS, type BeachLocation } from "../types";
 
 const route = new Hono();
-route.use("/reports/active", apiJwtAuth);
 
 function parseBeachLocation(value: string | undefined): BeachLocation | null {
 	const normalized = value?.trim().toLowerCase();
@@ -63,7 +62,7 @@ route.get("/reports/active", async (c) => {
 	});
 });
 
-route.delete("/reports/active", async (c) => {
+route.delete("/reports/active", apiJwtAuth, async (c) => {
 	const rawBeachLocation = c.req.query("beach_location");
 	const beachLocation = parseBeachLocation(rawBeachLocation);
 

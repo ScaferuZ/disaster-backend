@@ -83,7 +83,6 @@ const openApiDoc = {
 				summary: "Get current active crowdsource report counts per beach",
 				description: "Returns live report counts per LIK code within the current time window, whether each code has already triggered ML this window, and the active warning with full ML data and trigger-time report evidence if one exists.",
 				tags: ["Report"],
-				security: [{ bearerAuth: [] }],
 				parameters: [
 					{
 						in: "query",
