@@ -12,6 +12,7 @@ import {
 	JWT_AUTH_ENABLED,
 	JWT_PUBLIC_PATHS,
 	ML_BASE_URL,
+	PUSH_DELIVERY_MODE,
 	PUSH_SUBSCRIPTIONS_HASH,
 	REPORT_SYNC_STREAM,
 } from "../config";
@@ -46,7 +47,11 @@ route.get("/health", async (c) => {
 				enabled: JWT_AUTH_ENABLED,
 				publicPaths: JWT_PUBLIC_PATHS,
 			},
-			push: { configured: isPushConfigured(), subscriptions: pushSubscriptions },
+			push: {
+				configured: isPushConfigured(),
+				mode: PUSH_DELIVERY_MODE,
+				subscriptions: pushSubscriptions,
+			},
 			ts: Date.now(),
 		});
 	});

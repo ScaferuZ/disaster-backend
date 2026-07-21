@@ -24,6 +24,13 @@ export const REPORT_THRESHOLD = Number(process.env.REPORT_THRESHOLD ?? 5);
 export const ACTIVE_WARNING_TTL_SECONDS = Number(process.env.ACTIVE_WARNING_TTL_SECONDS ?? 12 * 60 * 60); // 12 hours
 export const PUSH_SUBSCRIPTIONS_HASH = process.env.PUSH_SUBSCRIPTIONS_HASH ?? "alerts:push:subscriptions";
 export const PUSH_DELIVERY_STREAM = process.env.PUSH_DELIVERY_STREAM ?? "push:delivery";
+const configuredPushDeliveryMode = (process.env.PUSH_DELIVERY_MODE ?? "real").trim().toLowerCase();
+if (configuredPushDeliveryMode !== "real" && configuredPushDeliveryMode !== "mock") {
+	throw new Error("PUSH_DELIVERY_MODE must be real or mock");
+}
+export const PUSH_DELIVERY_MODE = configuredPushDeliveryMode as "real" | "mock";
+export const MOCK_PUSH_SINK_URL = process.env.MOCK_PUSH_SINK_URL?.trim() ?? "";
+export const MOCK_PUSH_SINK_TOKEN = process.env.MOCK_PUSH_SINK_TOKEN?.trim() ?? "";
 export const ENABLE_SSE_DELIVERY = parseBoolEnv(process.env.ENABLE_SSE_DELIVERY, true);
 export const ENABLE_WS_DELIVERY = parseBoolEnv(process.env.ENABLE_WS_DELIVERY, true);
 export const ENABLE_PUSH_DELIVERY = parseBoolEnv(process.env.ENABLE_PUSH_DELIVERY, true);
