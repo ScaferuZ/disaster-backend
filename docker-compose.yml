@@ -17,6 +17,10 @@ services:
       REPORT_SYNC_STREAM: ${REPORT_SYNC_STREAM:-reports:sync}
       REPORT_DEDUPE_PREFIX: ${REPORT_DEDUPE_PREFIX:-reports:dedupe}
       PUSH_SUBSCRIPTIONS_HASH: ${PUSH_SUBSCRIPTIONS_HASH:-alerts:push:subscriptions}
+      PUSH_DELIVERY_STREAM: ${PUSH_DELIVERY_STREAM:-push:delivery}
+      PUSH_DELIVERY_MODE: ${PUSH_DELIVERY_MODE:-real}
+      MOCK_PUSH_SINK_URL: ${MOCK_PUSH_SINK_URL:-}
+      MOCK_PUSH_SINK_TOKEN: ${MOCK_PUSH_SINK_TOKEN:-}
       ENABLE_SSE_DELIVERY: ${ENABLE_SSE_DELIVERY:-true}
       ENABLE_WS_DELIVERY: ${ENABLE_WS_DELIVERY:-true}
       ENABLE_PUSH_DELIVERY: ${ENABLE_PUSH_DELIVERY:-true}
@@ -57,6 +61,23 @@ services:
     container_name: thesis-ml
     restart: unless-stopped
     profiles: ["ml"]
+
+  mock-push-sink:
+    image: oven/bun:1
+    container_name: thesis-mock-push-sink
+    profiles: ["mock-push"]
+    restart: unless-stopped
+    working_dir: /app
+    command: ["bun", "/app/scripts/mock-push-sink.ts"]
+    environment:
+      MOCK_PUSH_SINK_TOKEN: ${MOCK_PUSH_SINK_TOKEN:-}
+    volumes:
+      - ./scripts/mock-push-sink.ts:/app/scripts/mock-push-sink.ts:ro
+    healthcheck:
+      test: ["CMD", "bun", "-e", "const r = await fetch('http://localhost:8080/health'); process.exit(r.ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   disaster-redis:
     image: redis:7-alpine
