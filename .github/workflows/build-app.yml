@@ -41,11 +41,11 @@ jobs:
     needs: build-and-push
     steps:
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /opt/disaster-backend
             curl -fsSL https://raw.githubusercontent.com/ScaferuZ/disaster-backend/main/docker-compose.yml -o docker-compose.yml
